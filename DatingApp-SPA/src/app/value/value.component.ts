@@ -4,23 +4,23 @@ import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-value',
   templateUrl: './value.component.html',
-  styleUrls: ['./value.component.css']
+  styleUrls: ['./value.component.css'],
 })
 export class ValueComponent implements OnInit {
   values: any;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.getValues();
   }
 
   getValues() {
-    this.http.get('https://localhost:5001/api/values').subscribe(
-      response => {
+    this.http.get('https://localhost:4000/api/values').subscribe(
+      (response) => {
         this.values = response;
       },
-      error => {
+      (error) => {
         console.log(error);
       }
     );
