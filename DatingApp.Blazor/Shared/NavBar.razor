@@ -1,8 +1,9 @@
 ﻿@using Data
 @using Services
+@using System.Text.Json
 
 @inject AuthService authService
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime jsRuntime
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="#">Dating App</a>
@@ -69,18 +70,23 @@
 
     async Task Login()
     {
-        await authService.Login(loginForm);
+        var response = await authService.Login(loginForm);
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        var authResponse = JsonSerializer.Deserialize<AuthResponse>(response, options);
+
+        await jsRuntime.InvokeVoidAsync("log", response);
+        await jsRuntime.InvokeVoidAsync("saveToken", authResponse.Token);
+
         loggedIn = true;
     }
 
     async Task Logout()
     {
-        await authService.Logout();
+        await jsRuntime.InvokeVoidAsync("removeToken");
         loggedIn = false;
-    }
-
-    protected override void OnInitialized()
-    {
-        loggedIn = authService.CheckIfLoggedIn();
     }
 }

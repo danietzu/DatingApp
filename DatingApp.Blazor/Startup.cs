@@ -23,7 +23,7 @@ namespace DatingApp.Blazor
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
-            services.AddScoped<AuthService>();
+            services.AddSingleton<AuthService>();
             services.AddSingleton(new HttpClient
             {
                 BaseAddress = new Uri("https://localhost:5001")

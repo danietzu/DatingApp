@@ -1,0 +1,70 @@
+﻿@inject IJSRuntime js
+@inject AuthService authService
+
+<EditForm Model="@registerForm"
+          OnValidSubmit="@RegisterUser">
+    <h2 class="text-center text-primary">Sign Up</h2>
+    <hr />
+
+    <div class="form-group">
+        <InputText required
+                   type="text"
+                   class="form-control"
+                   placeholder="Username"
+                   @bind-Value="registerForm.Username" />
+    </div>
+
+    <div class="form-group">
+        <InputText required
+                   type="password"
+                   class="form-control"
+                   placeholder="Password"
+                   @bind-Value="registerForm.Password" />
+    </div>
+
+    <div class="form-group text-center">
+        <button class="btn btn-success"
+                type="submit">
+            Register
+        </button>
+        <button class="btn btn-default"
+                type="button"
+                @onclick="@(() => ShowRegisterForm.InvokeAsync(false))">
+            Cancel
+        </button>
+    </div>
+
+    <p>@message</p>
+</EditForm>
+
+@code {
+    [Parameter]
+    public EventCallback<bool>
+    ShowRegisterForm
+    { get; set; }
+
+    LoginForm registerForm = new LoginForm();
+    string message;
+
+    async Task RegisterUser()
+    {
+        var response = await authService.Register(registerForm);
+        RegisterResponse registerResponse;
+        if (response.StartsWith("{"))
+        {
+            registerResponse = JsonSerializer.Deserialize<RegisterResponse>
+                (response, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+            message = "There are problems with username or password.";
+        }
+        else
+        {
+            message = string.IsNullOrEmpty(response) ? "Registration successfull!" : response;
+        }
+
+        await js.InvokeVoidAsync("log", response);
+    }
+}

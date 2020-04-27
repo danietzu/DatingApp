@@ -1,14 +1,4 @@
-﻿window.addEventListener("load", () => {
-    if (localStorage.getItem("token") !== null &&
-        localStorage.getItem("token") !== "") {
-        DotNet.invokeMethodAsync("DatingApp.Blazor", "SetAsLoggedIn")
-            .then(result => {
-                console.log(result);
-            });
-    }
-});
-
-function createAlert(message) {
+﻿function createAlert(message) {
     alert(message);
 }
 
