@@ -1,6 +1,5 @@
 ﻿using DatingApp.Blazor.Data;
 using Microsoft.JSInterop;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -28,6 +27,18 @@ namespace DatingApp.Blazor.Services
                                                                    Encoding.UTF8,
                                                                    "application/json"));
             var content = response.Content.ReadAsStringAsync();
+
+            await _js.InvokeVoidAsync("log", content.Result);
+
+            if (content.Result.StartsWith("{\"token\""))
+            {
+                var authResponse = JsonSerializer.Deserialize<AuthResponse>(content.Result, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                return "OK " + authResponse.Token;
+            }
 
             string errorMessage = ErrorInterceptor.InterceptError(content.Result);
 

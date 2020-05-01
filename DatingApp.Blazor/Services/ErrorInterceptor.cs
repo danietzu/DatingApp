@@ -19,17 +19,17 @@ namespace DatingApp.Blazor.Services
 
                 if (errorResponse.Errors != null)
                 {
-                    errorMessage = $"{errorResponse.Title} ";
+                    errorMessage = $"{errorResponse.Title}" + "\n";
 
                     if (errorResponse.Errors.Username != null)
                         foreach (var error in errorResponse.Errors.Username)
                         {
-                            errorMessage += error ?? "";
+                            errorMessage += error + "\n" ?? "";
                         }
                     if (errorResponse.Errors.Password != null)
                         foreach (var error in errorResponse.Errors.Password)
                         {
-                            errorMessage += error ?? "";
+                            errorMessage += error + "\n" ?? "";
                         }
                 }
                 else

@@ -1,3 +1,4 @@
+using Blazored.Toast;
 using DatingApp.Blazor.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,11 +24,13 @@ namespace DatingApp.Blazor
             services.AddRazorPages();
             services.AddServerSideBlazor();
 
-            services.AddScoped<AuthService>();
+            services.AddTransient<AuthService>();
             services.AddSingleton(new HttpClient
             {
                 BaseAddress = new Uri("https://localhost:5001")
             });
+
+            services.AddBlazoredToast();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

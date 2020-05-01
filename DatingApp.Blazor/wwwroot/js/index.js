@@ -17,3 +17,9 @@ function removeToken() {
 function getToken() {
     return localStorage.getItem("token");
 }
+
+function confirm(message) {
+    alertify.confirm(message, function () {
+        alertify.success("Done.");
+    });
+}

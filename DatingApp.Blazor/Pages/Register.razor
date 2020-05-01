@@ -33,38 +33,25 @@
             Cancel
         </button>
     </div>
-
-    <p>@message</p>
 </EditForm>
 
 @code {
     [Parameter]
-    public EventCallback<bool>
-    ShowRegisterForm
-    { get; set; }
+    public EventCallback<bool> ShowRegisterForm { get; set; }
 
     LoginForm registerForm = new LoginForm();
-    string message;
 
     async Task RegisterUser()
     {
         var response = await authService.Register(registerForm);
-        RegisterResponse registerResponse;
-        if (response.StartsWith("{"))
-        {
-            registerResponse = JsonSerializer.Deserialize<RegisterResponse>
-                (response, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
 
-            message = "There are problems with username or password.";
+        if (!string.IsNullOrWhiteSpace(response))
+        {
+            await js.InvokeVoidAsync("alertify.error", response);
         }
         else
         {
-            message = string.IsNullOrEmpty(response) ? "Registration successfull!" : response;
+            await js.InvokeVoidAsync("alertify.success", "You are now registered!");
         }
-
-        await js.InvokeVoidAsync("log", response);
     }
 }

@@ -1,7 +1,8 @@
 ﻿@page "/"
 
-@inject IJSRuntime jsRuntime
+@inject IJSRuntime js
 @inject HttpClient http
+@inject IToastService toastService
 
 <div class="container mt-5">
     @if (registerMode)
@@ -23,10 +24,13 @@
             </p>
             <div class="text-center">
                 <button class="btn btn-primary btn-lg mr-2"
-                        @onclick="() => ShowRegisterForm(true)">
+                        @onclick="@(() => ShowRegisterForm(true))">
                     Register
                 </button>
-                <button class="btn btn-info btn-lg">Learn more</button>
+                <button class="btn btn-info btn-lg"
+                        @onclick="Alert">
+                    Learn more
+                </button>
             </div>
         </div>
     }
@@ -38,5 +42,10 @@
     void ShowRegisterForm(bool val)
     {
         registerMode = val;
+    }
+
+    async Task Alert()
+    {
+        await js.InvokeVoidAsync("confirm", "Test");
     }
 }

@@ -58,31 +58,44 @@
     LoginForm loginForm = new LoginForm();
     bool loggedIn;
 
+    protected override async Task OnInitializedAsync()
+    {
+        string token = await jsRuntime.InvokeAsync<string>("getToken");
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            await jsRuntime.InvokeVoidAsync("log", token);
+            loggedIn = true;
+        }
+    }
+
     bool isFormValid()
     {
         return !(string.IsNullOrWhiteSpace(loginForm.Username)) &&
-               !(string.IsNullOrWhiteSpace(loginForm.Password));
+        !(string.IsNullOrWhiteSpace(loginForm.Password));
     }
 
     async Task Login()
     {
         var response = await authService.Login(loginForm);
 
-        //var authResponse = JsonSerializer.Deserialize<AuthResponse>(response,
-        //                                                            new JsonSerializerOptions
-        //                                                            {
-        //                                                                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        //                                                            });
-
-        await jsRuntime.InvokeVoidAsync("log", response);
-        //await jsRuntime.InvokeVoidAsync("saveToken", authResponse.Token);
-
-        loggedIn = true;
+        if (response.StartsWith("OK"))
+        {
+            var token = response.Split(" ")[1];
+            await jsRuntime.InvokeVoidAsync("alertify.success", "Welcome!");
+            await jsRuntime.InvokeVoidAsync("saveToken", token);
+            loggedIn = true;
+        }
+        else
+        {
+            await jsRuntime.InvokeVoidAsync("alertify.error", response);
+        }
     }
 
     async Task Logout()
     {
         await jsRuntime.InvokeVoidAsync("removeToken");
+
         loggedIn = false;
     }
 }
