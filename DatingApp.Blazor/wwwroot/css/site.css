@@ -1,5 +1,7 @@
-@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
-
 button:disabled {
     cursor: not-allowed;
+}
+
+a {
+    cursor: pointer;
 }
