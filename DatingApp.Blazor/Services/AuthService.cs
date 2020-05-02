@@ -13,7 +13,8 @@ namespace DatingApp.Blazor.Services
         private readonly IJSRuntime _js;
         private readonly string _baseUrl = "https://localhost:4000/api/auth/";
 
-        public AuthService(HttpClient http, IJSRuntime js)
+        public AuthService(HttpClient http,
+                           IJSRuntime js)
         {
             _http = http;
             _js = js;
@@ -43,6 +44,14 @@ namespace DatingApp.Blazor.Services
             string errorMessage = ErrorInterceptor.InterceptError(content.Result);
 
             return errorMessage;
+        }
+
+        public async Task<string> LoggedIn()
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            return token;
+
+            // TODO: return bool after token validation
         }
 
         public async Task<string> Register(LoginForm registerForm)
