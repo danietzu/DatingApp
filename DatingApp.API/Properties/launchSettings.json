@@ -23,7 +23,7 @@
       "launchUrl": "weatherforecast",
       "applicationUrl": "https://localhost:4000;http://localhost:4001",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }
