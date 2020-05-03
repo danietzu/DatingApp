@@ -1,4 +1,5 @@
 ﻿using DatingApp.Blazor.Data;
+using Microsoft.Extensions.Configuration;
 using Microsoft.JSInterop;
 using System.Net.Http;
 using System.Text;
@@ -11,13 +12,17 @@ namespace DatingApp.Blazor.Services
     {
         private readonly HttpClient _http;
         private readonly IJSRuntime _js;
-        private readonly string _baseUrl = "https://localhost:4000/api/auth/";
+        private readonly IConfiguration _configuration;
+        private readonly string _baseUrl;
 
         public AuthService(HttpClient http,
-                           IJSRuntime js)
+                           IJSRuntime js,
+                           IConfiguration configuration)
         {
             _http = http;
             _js = js;
+            _configuration = configuration;
+            _baseUrl = _configuration.GetSection("ApiUrl").Value + "auth/";
         }
 
         public async Task<string> Login(LoginForm loginForm)
@@ -33,10 +38,11 @@ namespace DatingApp.Blazor.Services
 
             if (content.Result.StartsWith("{\"token\""))
             {
-                var authResponse = JsonSerializer.Deserialize<AuthResponse>(content.Result, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                var authResponse = JsonSerializer.Deserialize<AuthResponse>(content.Result,
+                                                                            new JsonSerializerOptions
+                                                                            {
+                                                                                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                                                                            });
 
                 return "OK " + authResponse.Token;
             }

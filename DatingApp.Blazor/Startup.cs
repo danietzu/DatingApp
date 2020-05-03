@@ -25,6 +25,7 @@ namespace DatingApp.Blazor
             services.AddServerSideBlazor();
 
             services.AddTransient<AuthService>();
+            services.AddTransient<UserService>();
             services.AddSingleton(new HttpClient
             {
                 BaseAddress = new Uri("https://localhost:5001")

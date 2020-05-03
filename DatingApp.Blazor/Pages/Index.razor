@@ -3,6 +3,7 @@
 @inject IJSRuntime js
 @inject HttpClient http
 @inject IToastService toastService
+@inject UserService userService
 
 <div class="container mt-5">
     @if (registerMode)
@@ -49,5 +50,7 @@
     async Task Alert()
     {
         await js.InvokeVoidAsync("confirm", "Test");
+        var users = await userService.GetUser(1);
+        await js.InvokeVoidAsync("log", users);
     }
 }
