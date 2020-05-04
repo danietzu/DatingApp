@@ -1,8 +1,28 @@
-﻿<div class="card mb-4">
+﻿@inject NavigationManager navigationManager
+
+<div id="member-card" class="card mb-4">
     <div class="card-img-wrapper">
         <img class="card-img-top"
              src="@User.PhotoUrl"
              alt="@User.KnownAs" />
+        <ul class="list-inline member-icons animate text-center">
+            <li class="list-inline-item">
+                <button class="btn btn-primary"
+                        @onclick="() => GoToMemberDetail(User.Id)">
+                    <i class="fa fa-user"></i>
+                </button>
+            </li>
+            <li class="list-inline-item">
+                <button class="btn btn-primary">
+                    <i class="fa fa-heart"></i>
+                </button>
+            </li>
+            <li class="list-inline-item">
+                <button class="btn btn-primary">
+                    <i class="fa fa-envelope"></i>
+                </button>
+            </li>
+        </ul>
     </div>
     <div class="card-body p-1">
         <h6 class="card-title text-center mb-1">
@@ -12,7 +32,51 @@
     </div>
 </div>
 
+<style>
+    #member-card:hover img {
+        transform: scale(1.2, 1.2);
+        transition-duration: 500ms;
+        transition-timing-function: ease-out;
+        opacity: 0.7;
+    }
+
+    #member-card img {
+        transform: scale(1.0, 1.0);
+        transition-duration: 500ms;
+        transition-timing-function: ease-out;
+    }
+
+    #member-card .card-img-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
+
+    #member-card .member-icons {
+        position: absolute;
+        bottom: -30%;
+        left: 0;
+        right: 0;
+        margin-right: auto;
+        margin-left: auto;
+        opacity: 0;
+    }
+
+    #member-card .card-img-wrapper:hover .member-icons {
+        bottom: 0;
+        opacity: 1;
+    }
+
+    #member-card .animate {
+        transition: all 0.3s ease-in-out;
+    }
+</style>
+
 @code {
     [Parameter]
     public User User { get; set; }
+
+    void GoToMemberDetail(int id)
+    {
+        navigationManager.NavigateTo($"/members/{id}");
+    }
 }

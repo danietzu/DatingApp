@@ -1,0 +1,151 @@
+﻿@page "/members/{Id:int}"
+
+@inject UserService userService
+
+@if (User != null)
+{
+    <div id="member-detail" class="container mt-4">
+        <div class="row">
+            <!-- left hand side -->
+            <div class="col-sm-4">
+                <div class="card">
+                    <img class="card-img-top img-thumbnail"
+                         src="@User.PhotoUrl"
+                         alt="@User.KnownAs" />
+                    <div class="card-body">
+                        <div>
+                            <strong>Location:</strong>
+                            <p>@User.City, @User.Country</p>
+                        </div>
+                        <div>
+                            <strong>Age:</strong>
+                            <p>@User.Age</p>
+                        </div>
+                        <div>
+                            <strong>Last Active:</strong>
+                            <p>@User.LastActive</p>
+                        </div>
+                        <div>
+                            <strong>Member since:</strong>
+                            <p>@User.Created</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group d-flex">
+                            <button class="btn btn-primary w-100">Like</button>
+                            <button class="btn btn-success w-100">Message</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- right hand side -->
+            <div class="col-sm-8">
+                <div class="tab-panel member-tabset">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active"
+                               id="about-tab"
+                               data-toggle="tab"
+                               href="#about"
+                               role="tab"
+                               aria-controls="about">
+                                About @User.KnownAs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               id="interests-tab"
+                               data-toggle="tab"
+                               href="#interests"
+                               role="tab"
+                               aria-controls="interests">
+                                Interests
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               id="photos-tab"
+                               data-toggle="tab"
+                               href="#photos"
+                               role="tab"
+                               aria-controls="photos">
+                                Photos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               id="messages-tab"
+                               data-toggle="tab"
+                               href="#messages"
+                               role="tab"
+                               aria-controls="messages">
+                                Messages
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active"
+                             id="about"
+                             role="tabpanel"
+                             aria-labelledby="about-tab">
+                            <h4>Description</h4>
+                            <p>@User.Introduction</p>
+                            <h4>Looking for</h4>
+                            <p>@User.LookingFor</p>
+                        </div>
+                        <div class="tab-pane fade show"
+                             id="interests"
+                             role="tabpanel"
+                             aria-labelledby="interests-lab">
+                            <h4>Interests</h4>
+                            <p>@User.Interests</p>
+                        </div>
+                        <div class="tab-pane fade show"
+                             id="photos"
+                             role="tabpanel"
+                             aria-labelledby="photos-lab">
+                            <h4>Photos will go here</h4>
+                            <PhotoGallery User="User" />
+                        </div>
+                        <div class="tab-pane fade show"
+                             id="messages"
+                             role="tabpanel"
+                             aria-labelledby="messages-lab">
+                            <h4>Messages will go here</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    #member-detail .img-thumbnail {
+        margin: 25px;
+        width: 85%;
+        height: 85%;
+    }
+
+    #member-detail .card-body {
+        padding: 0 25px;
+    }
+
+    #member-detail .card-footer {
+        padding: 10px 15px;
+        background-color: #fff;
+        border-top: none;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    User User;
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await userService.GetUser(Id);
+    }
+}

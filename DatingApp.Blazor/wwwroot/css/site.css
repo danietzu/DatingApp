@@ -5,3 +5,53 @@ button:disabled {
 a {
     cursor: pointer;
 }
+
+.tab-panel {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.nav-tabs > li.open, .member-tabset > .nav-tabs > li {
+    border-bottom: 4px solid transparent;
+}
+
+    .nav-tabs > li.open, .member-tabset > .nav-tabs > li:hover {
+        border-bottom-color: #fbcdcf;
+    }
+
+        .member-tabset > .nav-tabs > li.open > a, .member-tabset > .nav-tabs > li:hover > a {
+            border: 0;
+            background: none !important;
+            color: #333333;
+        }
+
+            .member-tabset > .nav-tabs > li.open > a > i, .member-tabset > .nav-tabs > li:hover > a > i {
+                color: #a6a6a6;
+            }
+
+        .member-tabset > .nav-tabs > li.open .dropdown-menu, .member-tabset > .nav-tabs > li:hover .dropdown-menu {
+            margin-top: 0px;
+        }
+
+    .member-tabset > .nav-tabs > li.active {
+        border-bottom-color: #E95420;
+        position: relative;
+    }
+
+        .member-tabset > .nav-tabs > li.active > a {
+            border: 0 !important;
+            color: #333333;
+        }
+
+            .member-tabset > .nav-tabs > li.active > a > i {
+                color: #404040;
+            }
+
+.member-tabset > .tab-content {
+    margin-top: 0px;
+    background-color: #fff;
+    border: 0;
+    border-top: 1px solid #eee;
+    padding: 10px 0;
+}
