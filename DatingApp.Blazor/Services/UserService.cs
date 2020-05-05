@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -49,6 +50,17 @@ namespace DatingApp.Blazor.Services
                                                       HttpMethod.Get,
                                                       token);
             return DeserializeString<User>(response);
+        }
+
+        public async Task<HttpResponseMessage> UpdateUser(int id, User user)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var userSerialized = JsonSerializer.Serialize(user);
+            var stringContent = new StringContent(userSerialized, Encoding.UTF8, "application/json");
+
+            return await _http.PutAsync(_baseUrl + "users/" + id, stringContent);
         }
 
         private async Task<string> SendHttpRequestAsync(Uri uri,

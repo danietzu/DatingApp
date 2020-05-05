@@ -23,3 +23,7 @@ function confirm(message) {
         alertify.success("Done.");
     });
 }
+
+function createConfirm() {
+    return confirm("Are you sure?");
+}

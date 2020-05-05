@@ -1,0 +1,176 @@
+﻿@page "/members/edit"
+
+@inject AuthService authService
+@inject UserService userService
+@inject IJSRuntime js
+
+@if (User != null)
+{
+    <div id="member-edit" class="container mt-4">
+        <div class="row">
+            <div class="col-sm-4">
+                <h1>Your Profile</h1>
+            </div>
+            <div class="col-sm-8">
+                @if (Changed)
+                {
+                    <div class="alert alert-info">
+                        <strong>Information:</strong>
+                        You have made changes. Any unsaved changes will be lost!
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="row">
+            <!-- left hand side -->
+            <div class="col-sm-4">
+                <div class="card">
+                    <img class="card-img-top img-thumbnail"
+                         src="@User.PhotoUrl"
+                         alt="@User.KnownAs" />
+                    <div class="card-body">
+                        <div>
+                            <strong>Location:</strong>
+                            <p>@User.City, @User.Country</p>
+                        </div>
+                        <div>
+                            <strong>Age:</strong>
+                            <p>@User.Age</p>
+                        </div>
+                        <div>
+                            <strong>Last Active:</strong>
+                            <p>@User.LastActive</p>
+                        </div>
+                        <div>
+                            <strong>Member since:</strong>
+                            <p>@User.Created</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-success btn-block"
+                                disabled="@(!Changed)"
+                                @onclick="SaveChanges">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- right hand side -->
+            <div class="col-sm-8">
+                <div class="tab-panel member-tabset">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active"
+                               id="about-tab"
+                               data-toggle="tab"
+                               href="#about"
+                               role="tab"
+                               aria-controls="about">
+                                Edit Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               id="photos-tab"
+                               data-toggle="tab"
+                               href="#photos"
+                               role="tab"
+                               aria-controls="photos">
+                                Edit Photos
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active"
+                             id="about"
+                             role="tabpanel"
+                             aria-labelledby="about-tab">
+                            <form @onkeyup="OnChangeHandler">
+                                <h4>Description</h4>
+                                <textarea name="introduction"
+                                          rows="6"
+                                          class="form-control"
+                                          @bind="User.Introduction" />
+                                <h4>Looking for</h4>
+                                <textarea name="looking-for"
+                                          rows="6"
+                                          class="form-control"
+                                          @bind="User.LookingFor" />
+                                <h4>Interests</h4>
+                                <textarea name="interests"
+                                          rows="6"
+                                          class="form-control"
+                                          @bind="User.Interests" />
+                                <h4>Location Details</h4>
+                                <div class="form-inline">
+                                    <label for="city">City</label>
+                                    <input type="text"
+                                           name="city"
+                                           class="form-control"
+                                           @bind="User.City" />
+                                    <label for="country">Country</label>
+                                    <input type="text"
+                                           name="country"
+                                           class="form-control"
+                                           @bind="User.Country" />
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade show"
+                             id="photos"
+                             role="tabpanel"
+                             aria-labelledby="photos-lab">
+                            <h4>Photo Edit will go here</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    #member-edit .img-thumbnail {
+        margin: 25px;
+        width: 85%;
+        height: 85%;
+    }
+
+    #member-edit .card-body {
+        padding: 0 25px;
+    }
+
+    #member-edit .card-footer {
+        padding: 10px 15px;
+        background-color: #fff;
+        border-top: none;
+    }
+</style>
+
+@code {
+    User User;
+    bool Changed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var id = await authService.GetLoggedInUserId();
+        if (id != 0)
+            User = await userService.GetUser(id);
+    }
+
+    void OnChangeHandler()
+    {
+        Changed = true;
+    }
+
+    async Task SaveChanges()
+    {
+        var response = await userService.UpdateUser(User.Id, User);
+
+        await js.InvokeVoidAsync("log", response);
+
+        await js.InvokeVoidAsync("alertify.success", "Changes saved!");
+
+        Changed = false;
+    }
+}

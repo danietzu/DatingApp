@@ -1,6 +1,9 @@
 ﻿using DatingApp.Blazor.Data;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.JSInterop;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -72,6 +75,56 @@ namespace DatingApp.Blazor.Services
             string errorMessage = ErrorInterceptor.InterceptError(content.Result);
 
             return errorMessage;
+        }
+
+        public async Task<int> GetLoggedInUserId()
+        {
+            // temporary solution
+            var token = await _js.InvokeAsync<string>("getToken");
+            if (string.IsNullOrWhiteSpace(token))
+                return 0;
+
+            string secret = "super secret key"; // this cannot stay here
+            var key = Encoding.ASCII.GetBytes(secret);
+            var handler = new JwtSecurityTokenHandler();
+            var validations = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            var jwt = handler.ReadJwtToken(token);
+            var id = jwt.Claims.First(claim => claim.Type == "nameid").Value;
+
+            await _js.InvokeVoidAsync("log", id);
+
+            return int.Parse(id);
+        }
+
+        public async Task<string> GetLoggedInUsername()
+        {
+            // temporary solution
+            var token = await _js.InvokeAsync<string>("getToken");
+            if (string.IsNullOrWhiteSpace(token))
+                return null;
+
+            string secret = "super secret key"; // this cannot stay here
+            var key = Encoding.ASCII.GetBytes(secret);
+            var handler = new JwtSecurityTokenHandler();
+            var validations = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            var jwt = handler.ReadJwtToken(token);
+            var name = jwt.Claims.First(claim => claim.Type == "unique_name").Value;
+
+            return name;
         }
     }
 }

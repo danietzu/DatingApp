@@ -43,10 +43,10 @@
                            data-toggle="dropdown"
                            aria-haspopup="true"
                            aria-expanded="false">
-                            Welcome User
+                            Welcome @Username
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#">Edit Profile</a>
+                            <NavLink class="dropdown-item" href="members/edit">Edit Profile</NavLink>
                             <a class="dropdown-item" href="#">Another action</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item"
@@ -92,6 +92,7 @@
 
 @code {
     LoginForm loginForm = new LoginForm();
+    string Username = "";
     bool loggedIn;
 
     protected override async Task OnInitializedAsync()
@@ -102,6 +103,9 @@
         {
             await jsRuntime.InvokeVoidAsync("log", token);
             loggedIn = true;
+
+            var name = await authService.GetLoggedInUsername();
+            Username = new CultureInfo("en-US", false).TextInfo.ToTitleCase(name);
         }
     }
 

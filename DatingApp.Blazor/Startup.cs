@@ -51,6 +51,30 @@ namespace DatingApp.Blazor
 
             app.UseRouting();
 
+            //app.Use(next => context =>
+            //{
+            //    var endpoint = context.GetEndpoint();
+            //    if (endpoint is null)
+            //    {
+            //        return Task.CompletedTask;
+            //    }
+
+            //    Console.WriteLine($"Endpoint: {endpoint.DisplayName}");
+
+            //if (endpoint is RouteEndpoint routeEndpoint)
+            //{
+            //    Console.WriteLine("Endpoint has route pattern: " +
+            //        routeEndpoint.RoutePattern.RawText);
+            //}
+
+            //foreach (var metadata in endpoint.Metadata)
+            //{
+            //    Console.WriteLine($"Endpoint has metadata: {metadata}");
+            //}
+
+            //return Task.CompletedTask;
+            //});
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
