@@ -120,7 +120,7 @@
                              id="photos"
                              role="tabpanel"
                              aria-labelledby="photos-lab">
-                            <h4>Photo Edit will go here</h4>
+                            <PhotoEditor Photos="@User.Photos" />
                         </div>
                     </div>
                 </div>
@@ -156,6 +156,8 @@
         var id = await authService.GetLoggedInUserId();
         if (id != 0)
             User = await userService.GetUser(id);
+
+        await js.InvokeVoidAsync("log", User);
     }
 
     void OnChangeHandler()

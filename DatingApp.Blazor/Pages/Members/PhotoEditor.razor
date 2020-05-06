@@ -1,0 +1,79 @@
+﻿@if (Photos != null)
+{
+    <div id="photo-editor" class="row">
+        @foreach (var photo in Photos)
+        {
+            <div class="col-sm-2">
+                <div class="container">
+                    <img src="@photo.Url" class="img-thumbnail p-1" />
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm">Main</button>
+                        <button type="button" class="btn btn-sm btn-danger">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <h3>Select files</h3>
+            <input type="file" @onchange="@UploadFile" id="fileUpload" multiple />
+        </div>
+
+        <div class="col-md-9" style="margin-bottom: 40px">
+            <h3>Upload queue</h3>
+            <p>Queue length: {uploader?.queue?.length}</p>
+            <div>
+                <div>
+                    Queue progress:
+                    <div class="progress" style="">
+                        <div class="progress-bar" role="progressbar"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-success btn-s">
+                    <span class="glyphicon glyphicon-upload"></span> Upload all
+                </button>
+                <button type="button" class="btn btn-warning btn-s">
+                    <span class="glyphicon glyphicon-ban-circle"></span> Cancel all
+                </button>
+                <button type="button" class="btn btn-danger btn-s">
+                    <span class="glyphicon glyphicon-trash"></span> Remove all
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    #photo-editor img.img-thumbnail {
+        height: 100px;
+        min-width: 100px !important;
+        margin-bottom: 2px;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public ICollection<Photo> Photos { get; set; }
+
+    string uploader;
+    bool hasBaseDropZoneOver;
+
+    void fileOverBase(EventArgs e)
+    {
+        hasBaseDropZoneOver = false;
+    }
+
+    void initializeUploader()
+    {
+        uploader = "";
+    }
+
+    void UploadFile()
+    {
+
+    }
+}
