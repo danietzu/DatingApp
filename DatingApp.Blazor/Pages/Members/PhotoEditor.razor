@@ -1,10 +1,13 @@
-﻿@if (Photos != null)
+﻿@inject IJSRuntime js
+@inject UserService userService
+
+@if (Photos != null)
 {
-    <div id="photo-editor" class="row">
-        @foreach (var photo in Photos)
-        {
-            <div class="col-sm-2">
-                <div class="container">
+    <div id="photo-editor" class="container">
+        <div class="row">
+            @foreach (var photo in Photos)
+            {
+                <div class="col-sm-3">
                     <img src="@photo.Url" class="img-thumbnail p-1" />
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm">Main</button>
@@ -13,45 +16,109 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
-
-    <div class="row">
-        <div class="col-md-3">
-            <h3>Select files</h3>
-            <input type="file" @onchange="@UploadFile" id="fileUpload" multiple />
+            }
         </div>
 
-        <div class="col-md-9" style="margin-bottom: 40px">
-            <h3>Upload queue</h3>
-            <p>Queue length: {uploader?.queue?.length}</p>
-            <div>
-                <div>
-                    Queue progress:
-                    <div class="progress" style="">
-                        <div class="progress-bar" role="progressbar"></div>
-                    </div>
+        <div class="row mt-3">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroupFileAddon01">Upload</span>
                 </div>
-                <button type="button" class="btn btn-success btn-s">
-                    <span class="glyphicon glyphicon-upload"></span> Upload all
-                </button>
-                <button type="button" class="btn btn-warning btn-s">
-                    <span class="glyphicon glyphicon-ban-circle"></span> Cancel all
-                </button>
-                <button type="button" class="btn btn-danger btn-s">
-                    <span class="glyphicon glyphicon-trash"></span> Remove all
-                </button>
+                <div class="custom-file">
+                    <InputFile multiple
+                               id="uploadFiles"
+                               class="custom-file-input"
+                               aria-describedby="inputGroupFileAddon01"
+                               OnChange="HandleSelection" />
+                    <label class="custom-file-label" for="inputGroupFile01">Choose file(s)</label>
+                </div>
             </div>
+
+            @if (selectedFiles != null)
+            {
+                foreach (var file in selectedFiles)
+                {
+                    var isLoading = file.Data.Position > 0;
+
+                    <div class="row file-row d-flex justify-content-between flex-nowrap">
+                        <div class="overflow-hidden text-nowrap">
+                            <h2>@file.Name</h2>
+                            Size: <strong>@file.Size bytes</strong>;
+                            Type: <strong>@file.Type</strong>
+                        </div>
+
+                        <button class="btn btn-primary m-1"
+                                @onclick="() => LoadFile(file)"
+                                disabled="@isLoading">
+                            @if (!isLoading)
+                            {
+                                <span>Load</span>
+                            }
+                            else
+                            {
+                                <span>Loaded @((100.0 * file.Data.Position / file.Size).ToString("0"))%</span>
+                            }
+                        </button>
+                    </div>
+
+                    <p>@file.Data</p>
+                }
+            }
+        </div>
+
+        <div class="row mt-3">
+            <button type="button"
+                    class="btn btn-success btn-s"
+                    @onclick="UploadFile">
+                <i class="fa fa-upload"></i> Upload all
+            </button>
+            <button type="button" class="btn btn-warning btn-s">
+                <i class="fa fa-circle"></i> Cancel all
+            </button>
+            <button type="button" class="btn btn-danger btn-s">
+                <i class="fa fa-trash"></i> Remove all
+            </button>
         </div>
     </div>
 }
 
 <style>
     #photo-editor img.img-thumbnail {
-        height: 100px;
+        height: 100px !important;
         min-width: 100px !important;
+        max-width: 100px !important;
         margin-bottom: 2px;
+    }
+
+    #photo-editor .btn-group {
+        margin-left: 30px;
+    }
+
+    .file-row {
+        width: 100%;
+        background-color: #e4e4e4;
+        padding: 1rem 1.5rem;
+        margin-top: 1rem;
+        border-radius: 0.6rem;
+        color: #555;
+    }
+
+        .file-row h2 {
+            margin: 0.3rem 0 0.6rem 0;
+            font-weight: bold;
+            color: black;
+            font-size: 1.1rem;
+        }
+
+        .file-row button {
+            padding: 0.5rem 1rem;
+        }
+
+    pre {
+        background-color: #f0f0f0;
+        overflow: auto;
+        padding: 1rem;
+        height: 10rem;
     }
 </style>
 
@@ -59,21 +126,47 @@
     [Parameter]
     public ICollection<Photo> Photos { get; set; }
 
-    string uploader;
-    bool hasBaseDropZoneOver;
+    IFileListEntry[] selectedFiles;
+    IFileListEntry _file;
+    Photo Photo;
+    ByteArrayContent _byteArrayContent;
 
-    void fileOverBase(EventArgs e)
+    MemoryStream stream;
+
+    void HandleSelection(IFileListEntry[] files)
     {
-        hasBaseDropZoneOver = false;
+        selectedFiles = files;
     }
 
-    void initializeUploader()
+    async Task LoadFile(IFileListEntry file)
     {
-        uploader = "";
+        // So the UI updates to show progress
+        file.OnDataRead += (sender, eventArgs) => InvokeAsync(StateHasChanged);
+
+        // Just load into .NET memory to show it can be done
+        // Alternatively it could be saved to disk, or parsed in memory, or similar
+        var ms = new MemoryStream();
+        await file.Data.CopyToAsync(ms);
+
+        _byteArrayContent = new ByteArrayContent(ms.ToArray());
+
+        stream = ms;
+        _file = file;
+        var formFile = new FormFile(ms, ms.Position, ms.Length, "name", "fileName");
+
+        Photo = new Photo
+        {
+            DateAdded = DateTime.Now,
+            //File = _byteArrayContent,
+            File = _byteArrayContent,
+            //File = new FormFile(ms, ms.Position, ms.Length, file.Name, file.Name),
+            Description = "Test photo"
+        };
     }
 
-    void UploadFile()
+    async Task UploadFile()
     {
-
+        var response = await userService.UploadPhoto(Photo);
+        await js.InvokeVoidAsync("log", response);
     }
 }

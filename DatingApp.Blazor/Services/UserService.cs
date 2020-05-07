@@ -63,6 +63,18 @@ namespace DatingApp.Blazor.Services
             return await _http.PutAsync(_baseUrl + "users/" + id, stringContent);
         }
 
+        public async Task<HttpResponseMessage> UploadPhoto(Photo photo)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var multipartContent = new MultipartFormDataContent();
+            multipartContent.Add(photo.File, "File", "fileName");
+            var postResponse = await _http.PostAsync(_baseUrl + "users/1/photos", multipartContent);
+
+            return postResponse;
+        }
+
         private async Task<string> SendHttpRequestAsync(Uri uri,
                                                         HttpMethod method,
                                                         string token)
