@@ -1,5 +1,7 @@
 using Blazored.Toast;
+using DatingApp.Blazor.Data;
 using DatingApp.Blazor.Services;
+using Fluxor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +25,11 @@ namespace DatingApp.Blazor
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.AddFluxor(options =>
+            {
+                options.ScanAssemblies(typeof(Startup).Assembly);
+            });
 
             services.AddTransient<AuthService>();
             services.AddTransient<UserService>();

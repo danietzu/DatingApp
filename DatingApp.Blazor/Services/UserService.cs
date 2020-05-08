@@ -75,6 +75,17 @@ namespace DatingApp.Blazor.Services
             return postResponse;
         }
 
+        public async Task<HttpResponseMessage> SetMainPhoto(int photoId)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var postResponse = await _http.PostAsync(_baseUrl + $"users/1/photos/{photoId}/setMain",
+                                                     new StringContent(""));
+
+            return postResponse;
+        }
+
         private async Task<string> SendHttpRequestAsync(Uri uri,
                                                         HttpMethod method,
                                                         string token)

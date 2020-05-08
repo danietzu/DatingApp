@@ -1,5 +1,9 @@
-﻿@inject NavigationManager navigationManager
+﻿@inherits FluxorComponent
+
+@inject NavigationManager navigationManager
 @inject AuthService authService
+@inject IState<UserState> userState
+@inject IDispatcher dispatcher
 @inject IJSRuntime jsRuntime
 
 <nav class="navbar navbar-expand-lg navbar-light bg-primary">
@@ -20,7 +24,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
             <ul class="navbar-nav mr-auto">
-                @if (loggedIn)
+                @if (userState.Value.CurrentUser != null)
                 {
                     <li class="nav-item">
                         <NavLink class="nav-link" href="members">Matches</NavLink>
@@ -34,16 +38,18 @@
                 }
             </ul>
             <form class="form-inline my-2 my-lg-0">
-                @if (loggedIn)
+                @if (userState.Value.CurrentUser != null)
                 {
-                    <div class="dropdown">
+                    <div class="dropdown d-flex justify-content-between">
+                        <img id="photo-url" src="@userState.Value.CurrentUser.PhotoUrl"
+                             alt="@userState.Value.CurrentUser.KnownAs's photo" />
                         <a class="nav-link dropdown-toggle"
                            id="navbarDropdown"
                            role="button"
                            data-toggle="dropdown"
                            aria-haspopup="true"
                            aria-expanded="false">
-                            Welcome @Username
+                            Welcome @userState.Value.CurrentUser.KnownAs
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <NavLink class="dropdown-item" href="members/edit">Edit Profile</NavLink>
@@ -55,14 +61,6 @@
                             </a>
                         </div>
                     </div>
-                    <input class="form-control mr-sm-2"
-                           type="search"
-                           placeholder="Search"
-                           aria-label="Search">
-                    <button class="btn btn-success my-2 my-sm-0"
-                            type="submit">
-                        Search
-                    </button>
                 }
                 else
                 {
@@ -90,24 +88,21 @@
     </div>
 </nav>
 
+<style>
+    #photo-url {
+        max-height: 50px;
+        border: 2px solid white;
+    }
+</style>
+
 @code {
     LoginForm loginForm = new LoginForm();
-    string Username = "";
-    bool loggedIn;
+    //User CurrentUser;
 
-    protected override async Task OnInitializedAsync()
-    {
-        string token = await jsRuntime.InvokeAsync<string>("getToken");
-
-        if (!string.IsNullOrWhiteSpace(token))
-        {
-            await jsRuntime.InvokeVoidAsync("log", token);
-            loggedIn = true;
-
-            var name = await authService.GetLoggedInUsername();
-            Username = new CultureInfo("en-US", false).TextInfo.ToTitleCase(name);
-        }
-    }
+    //protected override void OnInitialized()
+    //{
+    //    CurrentUser = userState.Value.CurrentUser;
+    //}
 
     bool isFormValid()
     {
@@ -125,8 +120,6 @@
             await jsRuntime.InvokeVoidAsync("alertify.success", "Logged In Successfully!");
             await jsRuntime.InvokeVoidAsync("saveToken", token);
 
-            loggedIn = true;
-
             navigationManager.NavigateTo("/members");
         }
         else
@@ -139,9 +132,7 @@
     async Task Logout()
     {
         await jsRuntime.InvokeVoidAsync("removeToken");
-
-        loggedIn = false;
-
+        await jsRuntime.InvokeVoidAsync("removeUser");
         navigationManager.NavigateTo("/");
     }
 }

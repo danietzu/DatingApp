@@ -3,8 +3,9 @@
 @inject AuthService authService
 @inject UserService userService
 @inject IJSRuntime js
+@inject IDispatcher dispatcher
 
-@if (User != null)
+@if (CurrentUser != null)
 {
     <div id="member-edit" class="container mt-4">
         <div class="row">
@@ -26,24 +27,24 @@
             <div class="col-sm-4">
                 <div class="card">
                     <img class="card-img-top img-thumbnail"
-                         src="@User.PhotoUrl"
-                         alt="@User.KnownAs" />
+                         src="@CurrentUser.PhotoUrl"
+                         alt="@CurrentUser.KnownAs" />
                     <div class="card-body">
                         <div>
                             <strong>Location:</strong>
-                            <p>@User.City, @User.Country</p>
+                            <p>@CurrentUser.City, @CurrentUser.Country</p>
                         </div>
                         <div>
                             <strong>Age:</strong>
-                            <p>@User.Age</p>
+                            <p>@CurrentUser.Age</p>
                         </div>
                         <div>
                             <strong>Last Active:</strong>
-                            <p>@User.LastActive</p>
+                            <p>@CurrentUser.LastActive</p>
                         </div>
                         <div>
                             <strong>Member since:</strong>
-                            <p>@User.Created</p>
+                            <p>@CurrentUser.Created</p>
                         </div>
                     </div>
                     <div class="card-footer">
@@ -90,29 +91,29 @@
                                 <textarea name="introduction"
                                           rows="6"
                                           class="form-control"
-                                          @bind="User.Introduction" />
+                                          @bind="CurrentUser.Introduction" />
                                 <h4>Looking for</h4>
                                 <textarea name="looking-for"
                                           rows="6"
                                           class="form-control"
-                                          @bind="User.LookingFor" />
+                                          @bind="CurrentUser.LookingFor" />
                                 <h4>Interests</h4>
                                 <textarea name="interests"
                                           rows="6"
                                           class="form-control"
-                                          @bind="User.Interests" />
+                                          @bind="CurrentUser.Interests" />
                                 <h4>Location Details</h4>
                                 <div class="form-inline">
                                     <label for="city">City</label>
                                     <input type="text"
                                            name="city"
                                            class="form-control"
-                                           @bind="User.City" />
+                                           @bind="CurrentUser.City" />
                                     <label for="country">Country</label>
                                     <input type="text"
                                            name="country"
                                            class="form-control"
-                                           @bind="User.Country" />
+                                           @bind="CurrentUser.Country" />
                                 </div>
                             </form>
                         </div>
@@ -120,7 +121,8 @@
                              id="photos"
                              role="tabpanel"
                              aria-labelledby="photos-lab">
-                            <PhotoEditor Photos="@User.Photos" />
+                            <PhotoEditor Photos="@CurrentUser.Photos"
+                                         OnChange="@GetUser" />
                         </div>
                     </div>
                 </div>
@@ -148,16 +150,25 @@
 </style>
 
 @code {
-    User User;
+    User CurrentUser;
+    int UserId;
     bool Changed;
 
     protected override async Task OnInitializedAsync()
     {
         var id = await authService.GetLoggedInUserId();
         if (id != 0)
-            User = await userService.GetUser(id);
+        {
+            UserId = id;
+            await GetUser();
+        }
+    }
 
-        await js.InvokeVoidAsync("log", User);
+    async Task GetUser()
+    {
+        CurrentUser = await userService.GetUser(UserId);
+        dispatcher.Dispatch(new SetCurrentUserAction { User = CurrentUser }); // TODO: move this in PhotoEditor
+                                                                              // TODO: refresh data in the UI without calling the API (userService)
     }
 
     void OnChangeHandler()
@@ -167,7 +178,7 @@
 
     async Task SaveChanges()
     {
-        var response = await userService.UpdateUser(User.Id, User);
+        var response = await userService.UpdateUser(CurrentUser.Id, CurrentUser);
 
         await js.InvokeVoidAsync("log", response);
 

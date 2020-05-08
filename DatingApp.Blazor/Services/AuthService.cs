@@ -1,4 +1,7 @@
 ﻿using DatingApp.Blazor.Data;
+using DatingApp.Blazor.Models;
+using DatingApp.Blazor.Store;
+using Fluxor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.JSInterop;
@@ -16,15 +19,21 @@ namespace DatingApp.Blazor.Services
         private readonly HttpClient _http;
         private readonly IJSRuntime _js;
         private readonly IConfiguration _configuration;
+        private readonly IState<UserState> _userState;
+        private readonly IDispatcher _dispatcher;
         private readonly string _baseUrl;
 
         public AuthService(HttpClient http,
                            IJSRuntime js,
-                           IConfiguration configuration)
+                           IConfiguration configuration,
+                           IState<UserState> userState,
+                           IDispatcher dispatcher)
         {
             _http = http;
             _js = js;
             _configuration = configuration;
+            _userState = userState;
+            _dispatcher = dispatcher;
             _baseUrl = _configuration.GetSection("ApiUrl").Value + "auth/";
         }
 
@@ -42,10 +51,12 @@ namespace DatingApp.Blazor.Services
             if (content.Result.StartsWith("{\"token\""))
             {
                 var authResponse = JsonSerializer.Deserialize<AuthResponse>(content.Result,
-                                                                            new JsonSerializerOptions
-                                                                            {
-                                                                                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                                                                            });
+                    new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
+
+                await SetCurrentUser(authResponse.User);
 
                 return "OK " + authResponse.Token;
             }
@@ -53,6 +64,14 @@ namespace DatingApp.Blazor.Services
             string errorMessage = ErrorInterceptor.InterceptError(content.Result);
 
             return errorMessage;
+        }
+
+        public async Task SetCurrentUser(User user)
+        {
+            var userJson = JsonSerializer.Serialize(user);
+            await _js.InvokeVoidAsync("saveUser", userJson);
+
+            _dispatcher.Dispatch(new SetCurrentUserAction { User = user });
         }
 
         public async Task<string> LoggedIn()
@@ -84,7 +103,7 @@ namespace DatingApp.Blazor.Services
             if (string.IsNullOrWhiteSpace(token))
                 return 0;
 
-            string secret = "super secret key"; // this cannot stay here
+            string secret = "super secret key"; // MUST remove this from here
             var key = Encoding.ASCII.GetBytes(secret);
             var handler = new JwtSecurityTokenHandler();
             var validations = new TokenValidationParameters
@@ -110,7 +129,7 @@ namespace DatingApp.Blazor.Services
             if (string.IsNullOrWhiteSpace(token))
                 return null;
 
-            string secret = "super secret key"; // this cannot stay here
+            string secret = "super secret key"; // MUST remove this from here
             var key = Encoding.ASCII.GetBytes(secret);
             var handler = new JwtSecurityTokenHandler();
             var validations = new TokenValidationParameters

@@ -1,5 +1,9 @@
-﻿@inject IJSRuntime js
+﻿@inherits FluxorComponent
+
+@inject IJSRuntime js
 @inject UserService userService
+@inject IState<UserState> userState
+@inject IDispatcher dispatcher
 
 @if (Photos != null)
 {
@@ -10,7 +14,13 @@
                 <div class="col-sm-3">
                     <img src="@photo.Url" class="img-thumbnail p-1" />
                     <div class="btn-group">
-                        <button type="button" class="btn btn-sm">Main</button>
+                        <button type="button"
+                                class="btn btn-sm
+                                @(photo.IsMain ? "btn-success active" : "btn-secondary")"
+                                disabled="@(photo.IsMain)"
+                                @onclick="() => SetMainPhoto(photo.Id)">
+                            Main
+                        </button>
                         <button type="button" class="btn btn-sm btn-danger">
                             <i class="fa fa-trash"></i>
                         </button>
@@ -70,13 +80,13 @@
             <button type="button"
                     class="btn btn-success btn-s"
                     @onclick="UploadFile">
-                <i class="fa fa-upload"></i> Upload all
+                <i class="fa fa-upload"></i> Upload
             </button>
             <button type="button" class="btn btn-warning btn-s">
-                <i class="fa fa-circle"></i> Cancel all
+                <i class="fa fa-ban"></i> Cancel
             </button>
             <button type="button" class="btn btn-danger btn-s">
-                <i class="fa fa-trash"></i> Remove all
+                <i class="fa fa-trash"></i> Remove
             </button>
         </div>
     </div>
@@ -91,7 +101,7 @@
     }
 
     #photo-editor .btn-group {
-        margin-left: 30px;
+        margin-left: 35px;
     }
 
     .file-row {
@@ -126,12 +136,12 @@
     [Parameter]
     public ICollection<Photo> Photos { get; set; }
 
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
     IFileListEntry[] selectedFiles;
-    IFileListEntry _file;
     Photo Photo;
     ByteArrayContent _byteArrayContent;
-
-    MemoryStream stream;
 
     void HandleSelection(IFileListEntry[] files)
     {
@@ -143,23 +153,15 @@
         // So the UI updates to show progress
         file.OnDataRead += (sender, eventArgs) => InvokeAsync(StateHasChanged);
 
-        // Just load into .NET memory to show it can be done
-        // Alternatively it could be saved to disk, or parsed in memory, or similar
         var ms = new MemoryStream();
         await file.Data.CopyToAsync(ms);
 
         _byteArrayContent = new ByteArrayContent(ms.ToArray());
 
-        stream = ms;
-        _file = file;
-        var formFile = new FormFile(ms, ms.Position, ms.Length, "name", "fileName");
-
         Photo = new Photo
         {
             DateAdded = DateTime.Now,
-            //File = _byteArrayContent,
             File = _byteArrayContent,
-            //File = new FormFile(ms, ms.Position, ms.Length, file.Name, file.Name),
             Description = "Test photo"
         };
     }
@@ -168,5 +170,26 @@
     {
         var response = await userService.UploadPhoto(Photo);
         await js.InvokeVoidAsync("log", response);
+
+        selectedFiles = null;
+        await OnChange.InvokeAsync(null);
+        await js.InvokeVoidAsync("alertify.success", "Photo uploaded successfully!");
+    }
+
+    async Task SetMainPhoto(int photoId)
+    {
+        var response = await userService.SetMainPhoto(photoId);
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            await js.InvokeVoidAsync("alertify.success", "Photo changed successfully!");
+
+            await OnChange.InvokeAsync(null);
+        }
+        else
+        {
+            await js.InvokeVoidAsync("alertify.error", content);
+        }
     }
 }

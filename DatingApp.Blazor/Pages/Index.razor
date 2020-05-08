@@ -1,9 +1,14 @@
 ﻿@page "/"
 
+@inherits FluxorComponent
+
+@inject IState<UserState> UserState
+@inject IDispatcher Dispatcher
 @inject IJSRuntime js
 @inject HttpClient http
 @inject IToastService toastService
 @inject UserService userService
+@inject AuthService authService
 
 <div class="container mt-5">
     @if (registerMode)
@@ -41,6 +46,19 @@
 
 @code {
     bool registerMode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userJson = await js.InvokeAsync<string>("getUser");
+        if (!string.IsNullOrWhiteSpace(userJson))
+        {
+            var user = JsonSerializer.Deserialize<User>
+                (userJson);
+            Dispatcher.Dispatch(new SetCurrentUserAction { User = user });
+
+            await js.InvokeVoidAsync("log", UserState.Value.CurrentUser);
+        }
+    }
 
     void ShowRegisterForm(bool val)
     {
