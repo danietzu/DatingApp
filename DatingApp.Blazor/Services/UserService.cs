@@ -86,6 +86,16 @@ namespace DatingApp.Blazor.Services
             return postResponse;
         }
 
+        public async Task<HttpResponseMessage> DeletePhoto(int photoId)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var postResponse = await _http.DeleteAsync(_baseUrl + $"users/1/photos/{photoId}");
+
+            return postResponse;
+        }
+
         private async Task<string> SendHttpRequestAsync(Uri uri,
                                                         HttpMethod method,
                                                         string token)

@@ -21,7 +21,9 @@
                                 @onclick="() => SetMainPhoto(photo.Id)">
                             Main
                         </button>
-                        <button type="button" class="btn btn-sm btn-danger">
+                        <button type="button"
+                                class="btn btn-sm btn-danger"
+                                @onclick="() => DeletePhoto(photo.Id)">
                             <i class="fa fa-trash"></i>
                         </button>
                     </div>
@@ -70,8 +72,6 @@
                             }
                         </button>
                     </div>
-
-                    <p>@file.Data</p>
                 }
             }
         </div>
@@ -184,6 +184,23 @@
         if (string.IsNullOrWhiteSpace(content))
         {
             await js.InvokeVoidAsync("alertify.success", "Photo changed successfully!");
+
+            await OnChange.InvokeAsync(null);
+        }
+        else
+        {
+            await js.InvokeVoidAsync("alertify.error", content);
+        }
+    }
+
+    async Task DeletePhoto(int photoId)
+    {
+        var response = await userService.DeletePhoto(photoId);
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            await js.InvokeVoidAsync("alertify.success", "Photo deleted successfully!");
 
             await OnChange.InvokeAsync(null);
         }
