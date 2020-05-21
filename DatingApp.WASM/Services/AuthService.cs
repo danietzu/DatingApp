@@ -18,21 +18,15 @@ namespace DatingApp.WASM.Services
     {
         private readonly HttpClient _http;
         private readonly IJSRuntime _js;
-        private readonly IConfiguration _configuration;
-        private readonly IState<UserState> _userState;
         private readonly IDispatcher _dispatcher;
         private readonly string _baseUrl;
 
         public AuthService(HttpClient http,
                            IJSRuntime js,
-                           IConfiguration configuration,
-                           IState<UserState> userState,
                            IDispatcher dispatcher)
         {
             _http = http;
             _js = js;
-            _configuration = configuration;
-            _userState = userState;
             _dispatcher = dispatcher;
             _baseUrl = "https://localhost:4001/api/" + "auth/";
         }
@@ -45,8 +39,6 @@ namespace DatingApp.WASM.Services
                                                                    Encoding.UTF8,
                                                                    "application/json"));
             var content = response.Content.ReadAsStringAsync();
-
-            await _js.InvokeVoidAsync("log", content.Result);
 
             if (content.Result.StartsWith("{\"token\""))
             {
@@ -116,8 +108,6 @@ namespace DatingApp.WASM.Services
 
             var jwt = handler.ReadJwtToken(token);
             var id = jwt.Claims.First(claim => claim.Type == "nameid").Value;
-
-            await _js.InvokeVoidAsync("log", id);
 
             return int.Parse(id);
         }

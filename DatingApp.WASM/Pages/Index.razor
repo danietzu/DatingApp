@@ -55,8 +55,6 @@
             var user = JsonSerializer.Deserialize<User>
                 (userJson);
             Dispatcher.Dispatch(new SetCurrentUserAction { User = user });
-
-            await js.InvokeVoidAsync("log", UserState.Value.CurrentUser);
         }
     }
 
