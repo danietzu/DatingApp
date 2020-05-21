@@ -1,0 +1,26 @@
+﻿@page "/members"
+
+@inject UserService userService
+
+<div class="container mt-5">
+    <div class="row">
+        @if (Users != null)
+        {
+            @foreach (var user in Users)
+            {
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <MemberCard User="user" />
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    IEnumerable<User> Users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await userService.GetUsers();
+    }
+}
