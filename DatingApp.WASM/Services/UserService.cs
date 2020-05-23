@@ -17,14 +17,17 @@ namespace DatingApp.WASM.Services
         private readonly HttpClient _http;
         private readonly IConfiguration _configuration;
         private readonly IJSRuntime _js;
+        private readonly AuthService _authService;
 
         public UserService(HttpClient http,
                            IConfiguration configuration,
-                           IJSRuntime js)
+                           IJSRuntime js,
+                           AuthService authService)
         {
             _http = http;
             _configuration = configuration;
             _js = js;
+            _authService = authService;
             _baseUrl = "https://localhost:4001/api/";
         }
 
@@ -70,7 +73,12 @@ namespace DatingApp.WASM.Services
 
             var multipartContent = new MultipartFormDataContent();
             multipartContent.Add(photo.File, "File", "fileName");
-            var postResponse = await _http.PostAsync(_baseUrl + "users/1/photos", multipartContent);
+
+            var currentUserId = await _authService.GetLoggedInUserId();
+
+            var postResponse = await _http.PostAsync(
+                _baseUrl + $"users/{currentUserId}/photos",
+                multipartContent);
 
             return postResponse;
         }

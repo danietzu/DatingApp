@@ -41,7 +41,8 @@
                 @if (userState.Value.CurrentUser != null)
                 {
                     <div class="dropdown d-flex justify-content-between">
-                        <img id="photo-url" src="@userState.Value.CurrentUser.PhotoUrl"
+                        <img id="photo-url"
+                             src="@(userState.Value.CurrentUser.PhotoUrl ?? "assets/user.jpg")"
                              alt="@userState.Value.CurrentUser.KnownAs's photo" />
                         <a class="nav-link dropdown-toggle"
                            id="navbarDropdown"
@@ -120,13 +121,14 @@
         {
             await jsRuntime.InvokeVoidAsync("alertify.error", response);
         }
-
     }
 
     async Task Logout()
     {
         await jsRuntime.InvokeVoidAsync("removeToken");
         await jsRuntime.InvokeVoidAsync("removeUser");
+
+        dispatcher.Dispatch(new SetCurrentUserAction { User = null });
         navigationManager.NavigateTo("/");
     }
 }

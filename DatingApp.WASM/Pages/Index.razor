@@ -3,7 +3,6 @@
 @inherits FluxorComponent
 
 @inject IState<UserState> UserState
-@inject IDispatcher Dispatcher
 @inject IJSRuntime js
 @inject HttpClient http
 @inject IToastService toastService
@@ -47,17 +46,6 @@
 @code {
     bool registerMode;
 
-    protected override async Task OnInitializedAsync()
-    {
-        var userJson = await js.InvokeAsync<string>("getUser");
-        if (!string.IsNullOrWhiteSpace(userJson))
-        {
-            var user = JsonSerializer.Deserialize<User>
-                (userJson);
-            Dispatcher.Dispatch(new SetCurrentUserAction { User = user });
-        }
-    }
-
     void ShowRegisterForm(bool val)
     {
         registerMode = val;
@@ -66,7 +54,5 @@
     async Task Alert()
     {
         await js.InvokeVoidAsync("confirm", "Test");
-        var users = await userService.GetUser(1);
-        await js.InvokeVoidAsync("log", users);
     }
 }

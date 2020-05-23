@@ -3,7 +3,7 @@
 <div id="member-card" class="card mb-4">
     <div class="card-img-wrapper">
         <img class="card-img-top"
-             src="@User.PhotoUrl"
+             src="@(User.PhotoUrl ?? "assets/user.jpg")"
              alt="@User.KnownAs" />
         <ul class="list-inline member-icons animate text-center">
             <li class="list-inline-item">

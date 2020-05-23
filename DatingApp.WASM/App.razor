@@ -1,4 +1,6 @@
 @inject IStore Store
+@inject IDispatcher Dispatcher
+@inject IJSRuntime js
 
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
@@ -15,5 +17,12 @@
     protected override async Task OnInitializedAsync()
     {
         await Store.InitializeAsync();
+
+        var userJson = await js.InvokeAsync<string>("getUser");
+        if (!string.IsNullOrWhiteSpace(userJson))
+        {
+            var user = JsonSerializer.Deserialize<User>(userJson);
+            Dispatcher.Dispatch(new SetCurrentUserAction { User = user });
+        }
     }
 }

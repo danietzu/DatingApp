@@ -2,7 +2,6 @@
 using DatingApp.WASM.Models;
 using DatingApp.WASM.Store;
 using Fluxor;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.JSInterop;
 using System.IdentityModel.Tokens.Jwt;
@@ -74,7 +73,7 @@ namespace DatingApp.WASM.Services
             // TODO: return bool after token validation
         }
 
-        public async Task<string> Register(LoginForm registerForm)
+        public async Task<string> Register(RegisterForm registerForm)
         {
             var user = JsonSerializer.Serialize(registerForm);
             var response = await _http.PostAsync(_baseUrl + "register",

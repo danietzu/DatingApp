@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace DatingApp.WASM.Data
+﻿namespace DatingApp.WASM.Data
 {
     public class LoginForm
     {

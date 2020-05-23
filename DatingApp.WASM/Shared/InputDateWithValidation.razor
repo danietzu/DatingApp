@@ -1,0 +1,47 @@
+﻿<input type="date"
+       class=@Class
+       placeholder=@Placeholder
+       @bind="@BindingValue"
+       @bind:format="yyyy-MM-dd"
+       @onblur=@((e) => EditContext.NotifyFieldChanged(new FieldIdentifier(Model, PropertyName))) />
+@if (EditContext.IsModified(new FieldIdentifier(Model, PropertyName)) || ShowErrors == true)
+{
+    @foreach (var error in EditContext.GetValidationMessages(new FieldIdentifier(Model, PropertyName)))
+    {
+        <p class="text-danger">
+            @error
+        </p>
+    }
+}
+
+@code {
+    private DateTime _value;
+
+    [Parameter]
+    public EditContext EditContext { get; set; }
+    [Parameter]
+    public RegisterForm Model { get; set; }
+    [Parameter]
+    public string Type { get; set; }
+    [Parameter]
+    public string PropertyName { get; set; }
+    [Parameter]
+    public string Placeholder { get; set; }
+    [Parameter]
+    public string Class { get; set; }
+    [Parameter]
+    public bool ShowErrors { get; set; }
+    [Parameter]
+    public DateTime BindingValue
+    {
+        get => _value;
+        set
+        {
+            if (_value == value) return;
+            _value = value;
+            BindingValueChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<DateTime> BindingValueChanged { get; set; }
+}

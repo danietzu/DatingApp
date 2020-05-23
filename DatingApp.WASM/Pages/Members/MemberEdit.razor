@@ -27,7 +27,7 @@
             <div class="col-sm-4">
                 <div class="card">
                     <img class="card-img-top img-thumbnail"
-                         src="@CurrentUser.PhotoUrl"
+                         src="@(CurrentUser.PhotoUrl ?? "assets/user.jpg")"
                          alt="@CurrentUser.KnownAs" />
                     <div class="card-body">
                         <div>
