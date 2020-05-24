@@ -27,11 +27,11 @@
                         </div>
                         <div>
                             <strong>Last Active:</strong>
-                            <p>@User.LastActive</p>
+                            <p>@Util.GetPrettyDate(User.LastActive)</p>
                         </div>
                         <div>
                             <strong>Member since:</strong>
-                            <p>@User.Created</p>
+                            <p>@User.Created.ToString("dd/MM/yyyy")</p>
                         </div>
                     </div>
                     <div class="card-footer">

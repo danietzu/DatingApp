@@ -47,6 +47,7 @@ namespace DatingApp.API
                 options.UseSqlite(Configuration["ConnectionStrings:Default"]));
             services.AddControllers();
             services.AddCors();
+            services.AddScoped<LogUserActivity>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

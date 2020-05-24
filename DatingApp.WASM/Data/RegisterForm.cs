@@ -14,6 +14,7 @@ namespace DatingApp.WASM.Data
                       ErrorMessage = "You must specify a username between 4 and 8 characters")]
         public string Username { get; set; }
 
+        [Required]
         [StringLength(maximumLength: 8,
                       MinimumLength = 4,
                       ErrorMessage = "You must specify a password between 4 and 8 characters")]
