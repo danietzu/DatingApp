@@ -28,7 +28,11 @@ namespace DatingApp.WASM.Services
             _baseUrl = "https://localhost:4001/api/";
         }
 
-        public async Task<PaginatedResult<IEnumerable<User>>> GetUsers(int currentPage, int itemsPerPage)
+        public async Task<PaginatedResult<IEnumerable<User>>> GetUsers(int currentPage,
+                                                                       int itemsPerPage,
+                                                                       string gender,
+                                                                       int minAge,
+                                                                       int maxAge)
         {
             var token = await _js.InvokeAsync<string>("getToken");
             if (!_http.DefaultRequestHeaders.Contains("Authorization"))
@@ -36,7 +40,10 @@ namespace DatingApp.WASM.Services
 
             var response = await _http.GetAsync(new Uri(_baseUrl + "users" +
                                                       $"?pageNumber={currentPage}" +
-                                                      $"&pageSize={itemsPerPage}"));
+                                                      $"&pageSize={itemsPerPage}" +
+                                                      $"&gender={gender}" +
+                                                      $"&minAge={minAge}" +
+                                                      $"&maxAge={maxAge}"));
 
             if (response.IsSuccessStatusCode)
             {

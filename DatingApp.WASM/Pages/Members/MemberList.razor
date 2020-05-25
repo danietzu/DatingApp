@@ -1,68 +1,159 @@
 ﻿@page "/members"
 
 @inject UserService userService
+@inject IState<UserState> userState
+@inject IJSRuntime js
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="pagination">
-            <button class="btn btn-custom"
-                    disabled="@(currentPage == 1)"
-                    @onclick=@(async ()=> await GetMembers(--currentPage))>
-                Prev
-            </button>
-            @for (int i = 1; i <= totalPages; i++)
-            {
-                var curPage = i;
-                <button class="btn btn-custom pagebutton @(currentPage==curPage?"btn-danger":"")"
-                        @onclick=@(async () => await GetMembers(curPage))>
-                    @curPage
-                </button>
-            }
-            <button class="btn btn-custom"
-                    disabled="@(currentPage == totalPages)"
-                    @onclick=@(async ()=> await GetMembers(++currentPage))>
-                Next
-            </button>
+@if (!loading)
+{
+    <div class="container mt-5">
+        <div class="text-center mt-3">
+            <h2>Your matches - @totalItems found</h2>
         </div>
 
-        <label>Page Size: </label>
-        <input type="number"
-               @bind="pageSize" />
-    </div>
-    <div class="row">
-        @if (Users != null)
-        {
-            @foreach (var user in Users)
-            {
-                <div class="col-lg-2 col-md-3 col-sm-6">
-                    <MemberCard User="user" />
+        <div class="container mt-3">
+            <form class="form-inline" novalidate>
+                <div class="form-group">
+                    <label for="minAge">Age From</label>
+                    <input type="number"
+                           class="form-control ml-1"
+                           style="width: 70px"
+                           id="minAge" name="minAge"
+                           @bind="minAge">
                 </div>
+
+                <div class="form-group px-2">
+                    <label for="maxAge">Age To</label>
+                    <input type="number"
+                           class="form-control ml-1"
+                           style="width: 70px"
+                           id="maxAge" name="maxAge"
+                           @bind="maxAge">
+                </div>
+
+                <div class="form-group px-2">
+                    <label for="gender">Show: </label>
+                    <select class="form-control ml-1"
+                            style="width: 130px"
+                            id="gender" name="gender"
+                            @bind="genderToShow">
+                        <option value="male">Males</option>
+                        <option value="female">Females</option>
+                    </select>
+                </div>
+                <button type="button"
+                        class="btn btn-primary"
+                        style="margin-left:10px"
+                        @onclick="() => GetMembers(currentPage)">
+                    Apply Filters
+                </button>
+                <button type="button"
+                        class="btn btn-info"
+                        style="margin-left:10px"
+                        @onclick="ResetFilters">
+                    Reset Filters
+                </button>
+            </form>
+            <br>
+        </div>
+
+        <div class="row">
+            @if (Users != null)
+            {
+                @foreach (var user in Users)
+                {
+                    <div class="col-lg-2 col-md-3 col-sm-6">
+                        <MemberCard User="user" />
+                    </div>
+                }
             }
-        }
+        </div>
+
+        <div class="row container mt-5">
+            <div class="pagination">
+                <button class="btn btn-custom"
+                        disabled="@(currentPage == 1)"
+                        @onclick=@(async ()=> await GetMembers(--currentPage))>
+                    Prev
+                </button>
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    var curPage = i;
+                    <button class="btn btn-custom pagebutton @(currentPage==curPage?"btn-danger":"")"
+                            @onclick=@(async () => await GetMembers(curPage))>
+                        @curPage
+                    </button>
+                }
+                <button class="btn btn-custom"
+                        disabled="@(currentPage == totalPages)"
+                        @onclick=@(async ()=> await GetMembers(++currentPage))>
+                    Next
+                </button>
+            </div>
+
+            <label>Page Size: </label>
+            <input type="number"
+                   @bind="pageSize" />
+        </div>
     </div>
-</div>
+}
 
 @code {
     IEnumerable<User> Users;
 
+    bool loading;
+
+    // pagination
+    int totalItems;
     int totalPages;
     int currentPage = 1;
     int pageSize = 5;
 
+    // filters
+    string genderToShow;
+    int minAge = 18;
+    int maxAge = 99;
+
     protected override async Task OnInitializedAsync()
     {
+        loading = true;
+
+        await SetGenderToShow();
         await GetMembers(currentPage);
+
+        loading = false;
+    }
+
+    async Task SetGenderToShow()
+    {
+        var userJson = await js.InvokeAsync<string>("getUser");
+        if (!string.IsNullOrWhiteSpace(userJson))
+        {
+            var user = JsonSerializer.Deserialize<User>(userJson);
+
+            genderToShow = user.Gender == "male" ? "female" : "male";
+        }
     }
 
     async Task GetMembers(int page)
     {
         currentPage = page;
 
-        var response = await userService.GetUsers(page, pageSize);
+        var response = await userService.GetUsers(page, pageSize, genderToShow, minAge, maxAge);
 
         Users = response.Result;
 
+        totalItems = response.Pagination.TotalItems;
         totalPages = (int)Math.Ceiling(response.Pagination.TotalItems /
                                       (double)response.Pagination.ItemsPerPage);
+    }
+
+    async Task ResetFilters()
+    {
+        await SetGenderToShow();
+        minAge = 18;
+        maxAge = 99;
+
+        await GetMembers(currentPage);
     }
 }

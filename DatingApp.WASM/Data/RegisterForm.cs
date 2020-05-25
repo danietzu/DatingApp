@@ -6,7 +6,7 @@ namespace DatingApp.WASM.Data
     public class RegisterForm
     {
         [Required]
-        public string Gender { get; set; } = "Male";
+        public string Gender { get; set; } = "male";
 
         [Required]
         [StringLength(maximumLength: 8,

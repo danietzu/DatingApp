@@ -9,14 +9,14 @@
 
     <div class="form-group">
         <label class="control-label" style="margin-right:15px">I am a: </label>
-        @foreach (var item in new string[] { "Male", "Female" })
+        @foreach (var item in new string[] { "male", "female" })
         {
             <label class="radio-inline mr-3">
                 <input type="radio"
                        name="gender"
                        id="@item"
                        value="@item"
-                       checked=@(registerForm.Gender.Equals(item,StringComparison.OrdinalIgnoreCase))
+                       checked=@(registerForm.Gender.Equals(item, StringComparison.OrdinalIgnoreCase))
                        @onchange="GenderSelection" />
                 <label for="@item">@item</label>
             </label>
