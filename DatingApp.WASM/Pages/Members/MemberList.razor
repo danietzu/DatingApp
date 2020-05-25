@@ -4,6 +4,32 @@
 
 <div class="container mt-5">
     <div class="row">
+        <div class="pagination">
+            <button class="btn btn-custom"
+                    disabled="@(currentPage == 1)"
+                    @onclick=@(async ()=> await GetMembers(--currentPage))>
+                Prev
+            </button>
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                var curPage = i;
+                <button class="btn btn-custom pagebutton @(currentPage==curPage?"btn-danger":"")"
+                        @onclick=@(async () => await GetMembers(curPage))>
+                    @curPage
+                </button>
+            }
+            <button class="btn btn-custom"
+                    disabled="@(currentPage == totalPages)"
+                    @onclick=@(async ()=> await GetMembers(++currentPage))>
+                Next
+            </button>
+        </div>
+
+        <label>Page Size: </label>
+        <input type="number"
+               @bind="pageSize" />
+    </div>
+    <div class="row">
         @if (Users != null)
         {
             @foreach (var user in Users)
@@ -19,8 +45,24 @@
 @code {
     IEnumerable<User> Users;
 
+    int totalPages;
+    int currentPage = 1;
+    int pageSize = 5;
+
     protected override async Task OnInitializedAsync()
     {
-        Users = await userService.GetUsers();
+        await GetMembers(currentPage);
+    }
+
+    async Task GetMembers(int page)
+    {
+        currentPage = page;
+
+        var response = await userService.GetUsers(page, pageSize);
+
+        Users = response.Result;
+
+        totalPages = (int)Math.Ceiling(response.Pagination.TotalItems /
+                                      (double)response.Pagination.ItemsPerPage);
     }
 }

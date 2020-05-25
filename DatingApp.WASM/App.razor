@@ -19,6 +19,7 @@
         await Store.InitializeAsync();
 
         var userJson = await js.InvokeAsync<string>("getUser");
+
         if (!string.IsNullOrWhiteSpace(userJson))
         {
             var user = JsonSerializer.Deserialize<User>(userJson);

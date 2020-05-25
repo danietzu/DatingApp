@@ -1,8 +1,8 @@
 ﻿using DatingApp.WASM.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -15,32 +15,49 @@ namespace DatingApp.WASM.Services
     {
         private readonly string _baseUrl;
         private readonly HttpClient _http;
-        private readonly IConfiguration _configuration;
         private readonly IJSRuntime _js;
         private readonly AuthService _authService;
 
         public UserService(HttpClient http,
-                           IConfiguration configuration,
                            IJSRuntime js,
                            AuthService authService)
         {
             _http = http;
-            _configuration = configuration;
             _js = js;
             _authService = authService;
             _baseUrl = "https://localhost:4001/api/";
         }
 
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<PaginatedResult<IEnumerable<User>>> GetUsers(int currentPage, int itemsPerPage)
         {
             var token = await _js.InvokeAsync<string>("getToken");
-            if (string.IsNullOrWhiteSpace(token))
-                return null;
+            if (!_http.DefaultRequestHeaders.Contains("Authorization"))
+                _http.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
 
-            var response = await SendHttpRequestAsync(new Uri(_baseUrl + "users"),
-                                                      HttpMethod.Get,
-                                                      token);
-            return DeserializeString<IEnumerable<User>>(response);
+            var response = await _http.GetAsync(new Uri(_baseUrl + "users" +
+                                                      $"?pageNumber={currentPage}" +
+                                                      $"&pageSize={itemsPerPage}"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = DeserializeString<IEnumerable<User>>(content);
+                var pagination = JsonSerializer.Deserialize<Pagination>(
+                    response.Headers.GetValues("Pagination").FirstOrDefault(),
+                    new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
+
+                return new PaginatedResult<IEnumerable<User>>
+                {
+                    Result = result,
+                    Pagination = pagination
+                };
+            }
+            else
+                return null;
         }
 
         public async Task<User> GetUser(int id)
@@ -71,8 +88,10 @@ namespace DatingApp.WASM.Services
             var token = await _js.InvokeAsync<string>("getToken");
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var multipartContent = new MultipartFormDataContent();
-            multipartContent.Add(photo.File, "File", "fileName");
+            var multipartContent = new MultipartFormDataContent
+            {
+                { photo.File, "File", "fileName" }
+            };
 
             var currentUserId = await _authService.GetLoggedInUserId();
 
