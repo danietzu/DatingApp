@@ -32,7 +32,8 @@ namespace DatingApp.WASM.Services
                                                                        int itemsPerPage,
                                                                        string gender,
                                                                        int minAge,
-                                                                       int maxAge)
+                                                                       int maxAge,
+                                                                       string orderBy)
         {
             var token = await _js.InvokeAsync<string>("getToken");
             if (!_http.DefaultRequestHeaders.Contains("Authorization"))
@@ -43,7 +44,8 @@ namespace DatingApp.WASM.Services
                                                       $"&pageSize={itemsPerPage}" +
                                                       $"&gender={gender}" +
                                                       $"&minAge={minAge}" +
-                                                      $"&maxAge={maxAge}"));
+                                                      $"&maxAge={maxAge}" +
+                                                      $"&orderBy={orderBy}"));
 
             if (response.IsSuccessStatusCode)
             {

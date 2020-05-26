@@ -13,6 +13,30 @@
 
         <div class="container mt-3">
             <form class="form-inline" novalidate>
+                <label>Order By</label>
+                <div class="btn-group btn-group-toggle mr-1 ml-1" data-toggle="buttons">
+                    <label class="btn btn-secondary active">
+                        <input type="radio"
+                               name="options"
+                               id="lastActive"
+                               checked="@(orderBy == "lastActive")"
+                               @onclick="@(async () => {
+                                               orderBy = "lastActive";
+                                               await GetMembers(currentPage); })">
+                        Last Active
+                    </label>
+                    <label class="btn btn-secondary">
+                        <input type="radio"
+                               name="options"
+                               id="option2"
+                               checked="@(orderBy == "created")"
+                               @onclick="@(async () => {
+                                               orderBy = "created";
+                                               await GetMembers(currentPage); })">
+                        Newest
+                    </label>
+                </div>
+
                 <div class="form-group">
                     <label for="minAge">Age From</label>
                     <input type="number"
@@ -114,6 +138,9 @@
     int minAge = 18;
     int maxAge = 99;
 
+    // sorting
+    string orderBy = "lastActive";
+
     protected override async Task OnInitializedAsync()
     {
         loading = true;
@@ -139,7 +166,12 @@
     {
         currentPage = page;
 
-        var response = await userService.GetUsers(page, pageSize, genderToShow, minAge, maxAge);
+        var response = await userService.GetUsers(page,
+                                                  pageSize,
+                                                  genderToShow,
+                                                  minAge,
+                                                  maxAge,
+                                                  orderBy);
 
         Users = response.Result;
 
