@@ -2,6 +2,7 @@
 
 @inject UserService userService
 @inject NavigationManager navigationManager
+@inject IJSRuntime js
 
 @if (User != null)
 {
@@ -36,7 +37,10 @@
                     </div>
                     <div class="card-footer">
                         <div class="btn-group d-flex">
-                            <button class="btn btn-primary w-100">Like</button>
+                            <button class="btn btn-primary w-100"
+                                    @onclick="SendLike">
+                                Like
+                            </button>
                             <button class="btn btn-success w-100">
                                 Message
                             </button>
@@ -153,5 +157,11 @@
     protected override async Task OnInitializedAsync()
     {
         User = await userService.GetUser(Id);
+    }
+
+    async Task SendLike()
+    {
+        var response = await userService.SendLike(Id);
+        await js.InvokeVoidAsync("alertify.success", $"You like {User.KnownAs}! <3");
     }
 }

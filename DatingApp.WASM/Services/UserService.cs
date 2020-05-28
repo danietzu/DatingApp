@@ -33,7 +33,9 @@ namespace DatingApp.WASM.Services
                                                                        string gender,
                                                                        int minAge,
                                                                        int maxAge,
-                                                                       string orderBy)
+                                                                       string orderBy,
+                                                                       bool? likers,
+                                                                       bool? likees)
         {
             var token = await _js.InvokeAsync<string>("getToken");
             if (!_http.DefaultRequestHeaders.Contains("Authorization"))
@@ -45,7 +47,9 @@ namespace DatingApp.WASM.Services
                                                       $"&gender={gender}" +
                                                       $"&minAge={minAge}" +
                                                       $"&maxAge={maxAge}" +
-                                                      $"&orderBy={orderBy}"));
+                                                      $"&orderBy={orderBy}" +
+                                                      $"&likers={likers}" +
+                                                      $"&likees={likees}"));
 
             if (response.IsSuccessStatusCode)
             {
@@ -90,6 +94,21 @@ namespace DatingApp.WASM.Services
             var stringContent = new StringContent(userSerialized, Encoding.UTF8, "application/json");
 
             return await _http.PutAsync(_baseUrl + "users/" + id, stringContent);
+        }
+
+        public async Task<HttpResponseMessage> SendLike(int recipientId)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var currentUserId = await _authService.GetLoggedInUserId();
+
+            var postResponse = await _http.PostAsync($"{_baseUrl}" +
+                                                     $"users/" +
+                                                     $"{currentUserId}/" +
+                                                     $"like/" +
+                                                     $"{recipientId}", null);
+            return postResponse;
         }
 
         public async Task<HttpResponseMessage> UploadPhoto(Photo photo)
