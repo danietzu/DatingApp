@@ -1,7 +1,111 @@
 ﻿@page "/messages"
 
-<h3>Messages</h3>
+@inject UserService userService
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="btn-group">
+            <button class="btn btn-primary
+                    @(messageContainer == "Unread" ? "active" : "")"
+                    @onclick="@(() => GetMessages("Unread"))">
+                <i class="fa fa-envelope"></i> Unread
+            </button>
+            <button class="btn btn-primary
+                    @(messageContainer == "Inbox" ? "active" : "")"
+                    @onclick="@(() => GetMessages("Inbox"))">
+                <i class="fa fa-envelope-open"></i> Inbox
+            </button>
+            <button class="btn btn-primary
+                    @(messageContainer == "Outbox" ? "active" : "")"
+                    @onclick="@(() => GetMessages("Outbox"))">
+                <i class="fa fa-paper-plane"></i> Outbox
+            </button>
+        </div>
+    </div>
+
+    @if (messages == null)
+    {
+        <div class="row">
+            <h3>No messages</h3>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <table class="table table-hover" style="cursor: pointer">
+                <tr>
+                    <th style="width: 40%">Message</th>
+                    <th style="width: 20%">
+                        @(messageContainer == "Inbox" ? "From" : "To")
+                    </th>
+                    <th style="width: 20%">
+                        @(messageContainer == "Inbox" ? "Received" : "Sent")
+                    </th>
+                    <th style="width: 20%"></th>
+                </tr>
+                @if (messages.Count() > 0)
+                    @foreach (var message in messages)
+                    {
+                        @*[routerLink]="['/members', messageContainer == 'Outbox' ? message.recipientId : message.senderId]"*@
+                        <tr>
+                            <td>@message.Content</td>
+                            <td>
+                                @if (messageContainer == "Inbox")
+                                {
+                                    <div>
+                                        <img src=@message.SenderPhotoUrl
+                                             class="img-circle rounded-circle"
+                                             style="width: 40px;">
+                                        <strong>@message.SenderKnownAs</strong>
+                                    </div>
+                                }
+                                @if (messageContainer == "Outbox")
+                                {
+                                    <div>
+                                        <img src=@message.RecipientPhotoUrl
+                                             class="img-circle rounded-circle"
+                                             style="width: 40px;">
+                                        <strong>@message.RecipientKnownAs</strong>
+                                    </div>
+                                }
+                            </td>
+                            <td>@message.MessageSent</td>
+                            <td>
+                                <button class="btn btn-danger">Delete</button>
+                            </td>
+                        </tr>
+                    }
+            </table>
+        </div>
+    }
+</div>
+
+@*<div class="d-flex justify-content-center">
+        <pagination [boundaryLinks]="true"
+                    [totalItems]="pagination.totalItems"
+                    [itemsPerPage]="pagination.itemsPerPage"
+                    [(ngModel)]="pagination.currentPage"
+                    (pageChanged)="pageChanged($event)"
+                    previousText="&lsaquo;" nextText="&rsaquo;" firstText="&laquo;" lastText="&raquo;">
+        </pagination>
+    </div>*@
 
 @code {
+    IEnumerable<Message> messages;
 
+    string messageContainer = "Inbox";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMessages(messageContainer);
+    }
+
+    async Task GetMessages(string container)
+    {
+        messages = new List<Message>();
+        messageContainer = container;
+
+        var response = await userService.GetMessages(1, 5, container);
+        messages = response.Result;
+    }
 }

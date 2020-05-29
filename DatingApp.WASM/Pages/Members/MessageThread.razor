@@ -1,0 +1,21 @@
+﻿@inject UserService userService
+
+<h3>MessageThread</h3>
+
+@if (messages != null)
+    @foreach (var message in messages)
+    {
+        <p>@message.Content</p>
+    }
+
+@code {
+    [Parameter]
+    public User Recipient { get; set; }
+
+    IEnumerable<Message> messages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        messages = await userService.GetMessageThread(Recipient.Id);
+    }
+}

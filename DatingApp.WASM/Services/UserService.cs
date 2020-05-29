@@ -111,6 +111,64 @@ namespace DatingApp.WASM.Services
             return postResponse;
         }
 
+        public async Task<PaginatedResult<IEnumerable<Message>>> GetMessages(int pageNumber,
+                                                                             int itemsPerPage,
+                                                                             string messageContainer)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            if (!_http.DefaultRequestHeaders.Contains("Authorization"))
+                _http.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+
+            var userId = await _authService.GetLoggedInUserId();
+
+            var response = await _http.GetAsync(new Uri(_baseUrl + $"users/{userId}/messages/" +
+                                                                   $"?pageNumber={pageNumber}" +
+                                                                   $"&pageSize={itemsPerPage}" +
+                                                                   $"&messageContainer={messageContainer}"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var result = DeserializeString<IEnumerable<Message>>(content);
+                var pagination = JsonSerializer.Deserialize<Pagination>(
+                    response.Headers.GetValues("Pagination").FirstOrDefault(),
+                    new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
+
+                return new PaginatedResult<IEnumerable<Message>>
+                {
+                    Result = result,
+                    Pagination = pagination
+                };
+            }
+            else
+                return null;
+        }
+
+        public async Task<IEnumerable<Message>> GetMessageThread(int recipientId)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            if (!_http.DefaultRequestHeaders.Contains("Authorization"))
+                _http.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+
+            var userId = await _authService.GetLoggedInUserId();
+
+            var response = await _http.GetAsync(new Uri(_baseUrl + $"users/{userId}/messages/" +
+                                                                   $"thread/{recipientId}"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                return DeserializeString<IEnumerable<Message>>(content);
+            }
+            else
+                return null;
+        }
+
         public async Task<HttpResponseMessage> UploadPhoto(Photo photo)
         {
             var token = await _js.InvokeAsync<string>("getToken");
@@ -135,7 +193,10 @@ namespace DatingApp.WASM.Services
             var token = await _js.InvokeAsync<string>("getToken");
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var postResponse = await _http.PostAsync(_baseUrl + $"users/1/photos/{photoId}/setMain",
+            var currentUserId = await _authService.GetLoggedInUserId();
+
+            var postResponse = await _http.PostAsync(_baseUrl + $"users/{currentUserId}/" +
+                                                                $"photos/{photoId}/setMain",
                                                      new StringContent(""));
 
             return postResponse;
@@ -146,7 +207,10 @@ namespace DatingApp.WASM.Services
             var token = await _js.InvokeAsync<string>("getToken");
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var postResponse = await _http.DeleteAsync(_baseUrl + $"users/1/photos/{photoId}");
+            var currentUserId = await _authService.GetLoggedInUserId();
+
+            var postResponse = await _http.DeleteAsync(_baseUrl + $"users/{currentUserId}/" +
+                                                                  $"photos/{photoId}");
 
             return postResponse;
         }

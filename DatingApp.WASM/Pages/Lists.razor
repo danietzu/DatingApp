@@ -1,6 +1,7 @@
 ﻿@page "/lists"
 
 @inject UserService usersService
+@inject AuthService authService
 
 <div class="text-center mt-3">
     <h2>
@@ -44,9 +45,15 @@
     Pagination pagination;
 
     string usersToShow = "likers";
+    string genderToShow;
 
     protected override async Task OnInitializedAsync()
     {
+        var currentUserId = await authService.GetLoggedInUserId();
+        var currentUser = await usersService.GetUser(currentUserId);
+        var currentUserGender = currentUser.Gender;
+
+        genderToShow = currentUserGender == "male" ? "female" : "male";
         await GetUsers();
     }
 
@@ -54,7 +61,7 @@
     {
         var paginatedResult = await usersService.GetUsers(1,
                                                           5,
-                                                          "female",
+                                                          genderToShow,
                                                           18,
                                                           99,
                                                           "created",
