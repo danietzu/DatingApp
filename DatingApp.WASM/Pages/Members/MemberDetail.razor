@@ -1,4 +1,5 @@
 ﻿@page "/members/{Id:int}"
+@page "/members/{Id:int}/{Tab}"
 
 @inject UserService userService
 @inject NavigationManager navigationManager
@@ -41,9 +42,14 @@
                                     @onclick="SendLike">
                                 Like
                             </button>
-                            <button class="btn btn-success w-100">
+                            <a class="btn btn-success w-100 nav-link"
+                               id="messages-tab"
+                               data-toggle="tab"
+                               href="#messages"
+                               role="tab"
+                               aria-controls="messages">
                                 Message
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -94,7 +100,7 @@
                         </li>
                     </ul>
                     <div class="tab-content" id="myTabContent">
-                        <div class="tab-pane fade show active"
+                        <div class="tab-pane fade show @(Tab == null ? "active" : "")"
                              id="about"
                              role="tabpanel"
                              aria-labelledby="about-tab">
@@ -117,7 +123,7 @@
                             <h4>Photos will go here</h4>
                             <PhotoGallery User="User" />
                         </div>
-                        <div class="tab-pane fade show"
+                        <div class="tab-pane fade show @(Tab == "messages" ? "active" : "")"
                              id="messages"
                              role="tabpanel"
                              aria-labelledby="messages-lab">
@@ -151,6 +157,8 @@
 @code {
     [Parameter]
     public int Id { get; set; }
+    [Parameter]
+    public string Tab { get; set; }
 
     User User;
 

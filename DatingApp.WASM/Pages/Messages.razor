@@ -1,6 +1,7 @@
 ﻿@page "/messages"
 
 @inject UserService userService
+@inject NavigationManager navManager
 
 <div class="container mt-5">
     <div class="row">
@@ -46,8 +47,9 @@
                 @if (messages.Count() > 0)
                     @foreach (var message in messages)
                     {
-                        @*[routerLink]="['/members', messageContainer == 'Outbox' ? message.recipientId : message.senderId]"*@
-                        <tr>
+                        <tr @onclick="@(() => navManager.NavigateTo($"members/" +
+                            $"{(messageContainer == "Outbox" ? message.RecipientId : message.SenderId)}" +
+                            $"/messages"))">
                             <td>@message.Content</td>
                             <td>
                                 @if (messageContainer == "Inbox")

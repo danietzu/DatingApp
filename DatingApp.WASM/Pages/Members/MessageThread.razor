@@ -1,21 +1,154 @@
 ﻿@inject UserService userService
+@inject AuthService authService
+@inject IJSRuntime js
 
-<h3>MessageThread</h3>
+<div class="card">
+    <div class="card-body">
+        @if (messages == null)
+        {
+            <p>No messages yet... Say hi by using the message box below.</p>
+        }
+        else
+        {
+            <ul class="chat">
+                @foreach (var (message, index) in messages.Select((value, index) => (value, index)))
+                {
+                    <li>
+                        @if (message.SenderId == Recipient.Id)
+                        {
+                            <span class="chat-img float-left">
+                                <img src="@message.SenderPhotoUrl" alt="@message.SenderKnownAs"
+                                     class="rounded-circle" />
+                            </span>
+                            <div class="chat-body message">
+                                <div class="header">
+                                    <strong class="primary-font">@message.SenderKnownAs</strong>
+                                    <small class="text-muted float-right">
+                                        <span class="fa fa-clock-o">@message.MessageSent</span>
+                                    </small>
+                                </div>
+                                <p>@message.Content</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="chat-img float-right">
+                                <img src="@message.SenderPhotoUrl" alt="@message.SenderKnownAs"
+                                     class="rounded-circle" />
+                            </span>
+                            <div class="chat-body message">
+                                <div class="header">
+                                    <small class="text-muted">
+                                        <span class="fa fa-clock-o">@message.MessageSent</span>
+                                        @if (message.IsRead == false)
+                                        {
+                                            <span class="text-danger">(Unread)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success">(Read @message.DateRead)</span>
+                                        }
+                                    </small>
+                                    <strong class="primary-font float-right">@message.SenderKnownAs</strong>
+                                </div>
+                                <p>@message.Content</p>
+                            </div>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+    <div class="card-footer">
+        <form>
+            <div class="input-group">
+                <input type="text" class="form-control input-group-sm"
+                       placeholder="Send a private message..."
+                       @bind="messageText" />
+                <div class="input-group-append">
+                    <button class="btn btn-primary"
+                            type="button"
+                            @onclick="SendMessage">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
-@if (messages != null)
-    @foreach (var message in messages)
-    {
-        <p>@message.Content</p>
+@* TODO: Add Pagination *@
+
+<style>
+    .card {
+        border: none;
     }
+
+    .chat {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+        .chat li {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dotted #b3a9a9;
+        }
+
+    .rounded-circle {
+        width: 50px;
+        height: 50px;
+    }
+
+    .card-body {
+        overflow-y: scroll;
+        height: 300px;
+    }
+</style>
 
 @code {
     [Parameter]
     public User Recipient { get; set; }
 
-    IEnumerable<Message> messages;
+    List<Message> messages;
+    string messageText;
 
     protected override async Task OnInitializedAsync()
     {
+        await GetMessages();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await ScrollToLastMessage();
+    }
+
+    async Task GetMessages()
+    {
+        // TODO: retrieve only last X messages to reduce data consumption
         messages = await userService.GetMessageThread(Recipient.Id);
+    }
+
+    async Task SendMessage()
+    {
+
+        var messageToSend = new Message
+        {
+
+            RecipientId = Recipient.Id,
+            Content = messageText,
+            MessageSent = DateTime.Now
+        };
+
+        var messageReturned = await userService.SendMessage(messageToSend);
+
+        messages.Add(messageReturned);
+        messageText = "";
+    }
+
+    async Task ScrollToLastMessage()
+    {
+        await js.InvokeVoidAsync("scrollTo", "message");
     }
 }

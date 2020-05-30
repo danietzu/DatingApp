@@ -148,7 +148,7 @@ namespace DatingApp.WASM.Services
                 return null;
         }
 
-        public async Task<IEnumerable<Message>> GetMessageThread(int recipientId)
+        public async Task<List<Message>> GetMessageThread(int recipientId)
         {
             var token = await _js.InvokeAsync<string>("getToken");
             if (!_http.DefaultRequestHeaders.Contains("Authorization"))
@@ -163,7 +163,31 @@ namespace DatingApp.WASM.Services
             {
                 var content = await response.Content.ReadAsStringAsync();
 
-                return DeserializeString<IEnumerable<Message>>(content);
+                return DeserializeString<List<Message>>(content);
+            }
+            else
+                return null;
+        }
+
+        public async Task<Message> SendMessage(Message message)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            if (!_http.DefaultRequestHeaders.Contains("Authorization"))
+                _http.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+
+            var userId = await _authService.GetLoggedInUserId();
+
+            var messageJson = JsonSerializer.Serialize(message);
+            var contentToSend = new StringContent(messageJson, Encoding.UTF8, "application/json");
+
+            var response = await _http.PostAsync(new Uri(_baseUrl + $"users/{userId}/messages/"),
+                                                                    contentToSend);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                return DeserializeString<Message>(content);
             }
             else
                 return null;
