@@ -46,7 +46,16 @@ namespace DatingApp.API
             services.AddDbContext<DataContext>(options =>
                 options.UseSqlite(Configuration["ConnectionStrings:Default"]));
             services.AddControllers();
-            services.AddCors();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", policy =>
+                {
+                    policy.AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .WithOrigins("http://localhost:5000",
+                                       "https://192.168.178.137:45456");
+                });
+            });
             services.AddScoped<LogUserActivity>();
         }
 
@@ -78,7 +87,7 @@ namespace DatingApp.API
 
             app.UseRouting();
 
-            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            app.UseCors("CorsPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();

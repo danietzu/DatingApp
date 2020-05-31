@@ -26,6 +26,7 @@ namespace DatingApp.WASM.Services
             _js = js;
             _authService = authService;
             _baseUrl = "https://localhost:4001/api/";
+            //_baseUrl = "https://192.168.178.137:45455/api/";
         }
 
         public async Task<PaginatedResult<IEnumerable<User>>> GetUsers(int currentPage,
@@ -188,6 +189,44 @@ namespace DatingApp.WASM.Services
                 var content = await response.Content.ReadAsStringAsync();
 
                 return DeserializeString<Message>(content);
+            }
+            else
+                return null;
+        }
+
+        public async Task<HttpResponseMessage> MarkMessageAsRead(int id)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            if (!_http.DefaultRequestHeaders.Contains("Authorization"))
+                _http.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+
+            var userId = await _authService.GetLoggedInUserId();
+
+            var response = await _http.PostAsync(new Uri(_baseUrl + $"users/{userId}/messages/{id}/read"),
+                                                 null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return response;
+            }
+            else
+                return null;
+        }
+
+        public async Task<HttpResponseMessage> DeleteMessage(int id)
+        {
+            var token = await _js.InvokeAsync<string>("getToken");
+            if (!_http.DefaultRequestHeaders.Contains("Authorization"))
+                _http.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+
+            var userId = await _authService.GetLoggedInUserId();
+
+            var response = await _http.PostAsync(new Uri(_baseUrl + $"users/{userId}/messages/{id}"),
+                                                 null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return response;
             }
             else
                 return null;

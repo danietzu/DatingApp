@@ -24,7 +24,8 @@ namespace DatingApp.WASM
 
             builder.Services.AddTransient(sp => new HttpClient
             {
-                BaseAddress = new Uri("https://localhost:4001/api")
+                //BaseAddress = new Uri("https://localhost:4001/api")
+                BaseAddress = new Uri("https://192.168.178.137:45456/api")
             });
 
             builder.Services.AddTransient<AuthService>();

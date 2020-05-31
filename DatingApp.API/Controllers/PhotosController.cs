@@ -6,6 +6,7 @@ using DatingApp.API.Dtos;
 using DatingApp.API.Helpers;
 using DatingApp.API.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace DatingApp.API.Controllers
 {
     [ApiController]
     [Authorize]
+    [EnableCors("CorsPolicy")]
     [Route("api/users/{userId}/[controller]")]
     public class PhotosController : ControllerBase
     {
@@ -52,7 +54,7 @@ namespace DatingApp.API.Controllers
 
         [HttpPost]
         public async Task<IActionResult> AddPhotoForUser(int userId,
-                                                         [FromForm]PhotoForCreationDto photoForCreationDto)
+                                                         [FromForm] PhotoForCreationDto photoForCreationDto)
         {
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();

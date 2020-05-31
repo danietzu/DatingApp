@@ -28,6 +28,7 @@ namespace DatingApp.WASM.Services
             _js = js;
             _dispatcher = dispatcher;
             _baseUrl = "https://localhost:4001/api/" + "auth/";
+            //_baseUrl = "https://192.168.178.137:45455/api/" + "auth/";
         }
 
         public async Task<string> Login(LoginForm loginForm)

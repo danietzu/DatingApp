@@ -4,6 +4,7 @@ using DatingApp.API.Dtos;
 using DatingApp.API.Helpers;
 using DatingApp.API.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace DatingApp.API.Controllers
 {
     [ApiController]
     [Authorize]
+    [EnableCors("CorsPolicy")]
     [ServiceFilter(typeof(LogUserActivity))]
     [Route("api/users/{userId}/[controller]")]
     public class MessagesController : ControllerBase
@@ -98,6 +100,47 @@ namespace DatingApp.API.Controllers
             }
             else
                 throw new Exception("Creating message failed on save");
+        }
+
+        [HttpPost("{id}")]
+        public async Task<IActionResult> DeleteMessage(int id, int userId)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var messageFromRepository = await _repository.GetMessage(id);
+
+            if (messageFromRepository.SenderId == userId)
+                messageFromRepository.SenderDeleted = true;
+            if (messageFromRepository.RecipientId == userId)
+                messageFromRepository.RecipientDeleted = true;
+
+            if (messageFromRepository.SenderDeleted && messageFromRepository.RecipientDeleted)
+                _repository.Delete(messageFromRepository);
+
+            if (await _repository.SaveAll())
+                return NoContent();
+            else
+                throw new Exception("Error deleting the message");
+        }
+
+        [HttpPost("{id}/read")]
+        public async Task<IActionResult> MarkMessageAsRead(int userId, int id)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var messageFromRepository = await _repository.GetMessage(id);
+
+            if (messageFromRepository.RecipientId != userId)
+                return Unauthorized();
+
+            messageFromRepository.IsRead = true;
+            messageFromRepository.DateRead = DateTime.Now;
+
+            await _repository.SaveAll();
+
+            return NoContent();
         }
     }
 }

@@ -121,6 +121,13 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        var userId = await authService.GetLoggedInUserId();
+
+        if (!firstRender)
+            foreach (var message in messages)
+                if (message.RecipientId == userId && message.IsRead == false)
+                    await userService.MarkMessageAsRead(message.Id);
+
         await ScrollToLastMessage();
     }
 

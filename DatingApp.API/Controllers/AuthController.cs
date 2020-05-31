@@ -2,6 +2,7 @@
 using DatingApp.API.Data;
 using DatingApp.API.Dtos;
 using DatingApp.API.Models;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -13,8 +14,9 @@ using System.Threading.Tasks;
 
 namespace DatingApp.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("CorsPolicy")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthRepository _repository;
