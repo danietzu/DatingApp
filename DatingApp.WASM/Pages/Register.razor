@@ -1,4 +1,5 @@
 ﻿@inject IJSRuntime js
+@inject IToastService toastService
 @inject AuthService authService
 @inject NavigationManager NavManager
 
@@ -101,7 +102,6 @@
 
     <div class="form-group text-center">
         <button class="btn btn-success"
-                disabled="@(editContext.Validate() == false)"
                 type="submit">
             Register
         </button>
@@ -142,7 +142,7 @@
 
             if (!string.IsNullOrWhiteSpace(response))
             {
-                await js.InvokeVoidAsync("alertify.error", response);
+                toastService.ShowError(response);
             }
             else
             {
@@ -155,14 +155,15 @@
                 if (loginResponse.StartsWith("OK"))
                 {
                     var token = loginResponse.Split(" ")[1];
-                    await js.InvokeVoidAsync("alertify.success", "You are now registered!");
+
+                    toastService.ShowSuccess("You are now registered!");
                     await js.InvokeVoidAsync("saveToken", token);
 
                     NavManager.NavigateTo("/members");
                 }
                 else
                 {
-                    await js.InvokeVoidAsync("alertify.error", response);
+                    toastService.ShowError(response);
                 }
             }
         }

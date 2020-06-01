@@ -3,6 +3,7 @@
 
 @inject UserService userService
 @inject NavigationManager navigationManager
+@inject IToastService toastService
 @inject IJSRuntime js
 
 @if (User != null)
@@ -58,76 +59,53 @@
             <div class="col-sm-8">
                 <div class="tab-panel member-tabset">
                     <ul class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a class="nav-link active"
-                               id="about-tab"
-                               data-toggle="tab"
-                               href="#about"
-                               role="tab"
-                               aria-controls="about">
+                        <li class="nav-item @(Tab == "about" ? "active" : "")">
+                            <a class="nav-link"
+                               href="members/@Id/about">
                                 About @User.KnownAs
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item @(Tab == "interests" ? "active" : "")">
                             <a class="nav-link"
-                               id="interests-tab"
-                               data-toggle="tab"
-                               href="#interests"
-                               role="tab"
-                               aria-controls="interests">
+                               href="members/@Id/interests">
                                 Interests
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item @(Tab == "photos" ? "active" : "")">
                             <a class="nav-link"
-                               id="photos-tab"
-                               data-toggle="tab"
-                               href="#photos"
-                               role="tab"
-                               aria-controls="photos">
+                               href="members/@Id/photos">
                                 Photos
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item @(Tab == "messages" ? "active" : "")">
                             <a class="nav-link"
-                               id="messages-tab"
-                               data-toggle="tab"
-                               href="#messages"
-                               role="tab"
-                               aria-controls="messages">
+                               href="members/@Id/messages">
                                 Messages
                             </a>
                         </li>
                     </ul>
-                    <div class="tab-content" id="myTabContent">
-                        <div class="tab-pane fade show @(Tab == null ? "active" : "")"
-                             id="about"
-                             role="tabpanel"
-                             aria-labelledby="about-tab">
+                    <div class="tab-content">
+                        <div class="tab-pane fade @(Tab == "about" ? "show active" : "")">
                             <h4>Description</h4>
                             <p>@User.Introduction</p>
                             <h4>Looking for</h4>
                             <p>@User.LookingFor</p>
                         </div>
-                        <div class="tab-pane fade show"
-                             id="interests"
-                             role="tabpanel"
-                             aria-labelledby="interests-lab">
+                        <div class="tab-pane fade @(Tab == "interests" ? "show active" : "")">
                             <h4>Interests</h4>
                             <p>@User.Interests</p>
                         </div>
-                        <div class="tab-pane fade show"
-                             id="photos"
-                             role="tabpanel"
-                             aria-labelledby="photos-lab">
-                            <h4>Photos will go here</h4>
-                            <PhotoGallery User="User" />
+                        <div class="tab-pane fade @(Tab == "photos" ? "show active" : "")">
+                            @if (Tab == "photos")
+                            {
+                                <PhotoGallery User="User" />
+                            }
                         </div>
-                        <div class="tab-pane fade show @(Tab == "messages" ? "active" : "")"
-                             id="messages"
-                             role="tabpanel"
-                             aria-labelledby="messages-lab">
-                            <MessageThread Recipient="User" />
+                        <div class="tab-pane fade @(Tab == "messages" ? "show active" : "")">
+                            @if (Tab == "messages")
+                            {
+                                <MessageThread Recipient="User" />
+                            }
                         </div>
                     </div>
                 </div>
@@ -170,6 +148,6 @@
     async Task SendLike()
     {
         var response = await userService.SendLike(Id);
-        await js.InvokeVoidAsync("alertify.success", $"You like {User.KnownAs}! <3");
+        toastService.ShowSuccess($"You like {User.KnownAs}! <3");
     }
 }

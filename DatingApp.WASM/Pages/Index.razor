@@ -51,8 +51,8 @@
         registerMode = val;
     }
 
-    async Task Alert()
+    void Alert()
     {
-        await js.InvokeVoidAsync("confirm", "Test");
+        toastService.ShowInfo("I'm an INFO message");
     }
 }

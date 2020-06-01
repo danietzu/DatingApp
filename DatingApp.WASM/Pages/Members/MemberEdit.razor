@@ -2,6 +2,7 @@
 
 @inject AuthService authService
 @inject UserService userService
+@inject IToastService toastService
 @inject IJSRuntime js
 @inject IDispatcher dispatcher
 
@@ -180,9 +181,7 @@
     {
         var response = await userService.UpdateUser(CurrentUser.Id, CurrentUser);
 
-        await js.InvokeVoidAsync("log", response);
-
-        await js.InvokeVoidAsync("alertify.success", "Changes saved!");
+        toastService.ShowSuccess("Changes saved!");
 
         Changed = false;
     }

@@ -2,6 +2,7 @@
 
 @inject IJSRuntime js
 @inject UserService userService
+@inject IToastService toastService
 @inject IState<UserState> userState
 @inject IDispatcher dispatcher
 
@@ -169,11 +170,10 @@
     async Task UploadFile()
     {
         var response = await userService.UploadPhoto(Photo);
-        await js.InvokeVoidAsync("log", response);
 
         selectedFiles = null;
         await OnChange.InvokeAsync(null);
-        await js.InvokeVoidAsync("alertify.success", "Photo uploaded successfully!");
+        toastService.ShowSuccess("Photo uploaded successfully!");
     }
 
     async Task SetMainPhoto(int photoId)
@@ -183,13 +183,13 @@
 
         if (string.IsNullOrWhiteSpace(content))
         {
-            await js.InvokeVoidAsync("alertify.success", "Photo changed successfully!");
+            toastService.ShowSuccess("Photo changed successfully!");
 
             await OnChange.InvokeAsync(null);
         }
         else
         {
-            await js.InvokeVoidAsync("alertify.error", content);
+            toastService.ShowError(content);
         }
     }
 
@@ -200,13 +200,13 @@
 
         if (string.IsNullOrWhiteSpace(content))
         {
-            await js.InvokeVoidAsync("alertify.success", "Photo deleted successfully!");
+            toastService.ShowSuccess("Photo deleted successfully!");
 
             await OnChange.InvokeAsync(null);
         }
         else
         {
-            await js.InvokeVoidAsync("alertify.error", content);
+            toastService.ShowError(content);
         }
     }
 }

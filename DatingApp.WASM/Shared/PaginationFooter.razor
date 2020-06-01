@@ -1,0 +1,50 @@
+﻿<div class="row mt-5"
+     style="position: fixed; width: 100%; bottom: 0; right: 0; z-index: 3;
+                    background-color: white; padding: 10px;">
+    <div class="pagination">
+        <button class="btn btn-custom"
+                disabled="@(CurrentPage == 1)"
+                @onclick=@(() => PageChanged.InvokeAsync(--CurrentPage))>
+            Prev
+        </button>
+        @for (int i = 1; i <= TotalPages; i++)
+        {
+            var curPage = i;
+            <button class="btn btn-custom pagebutton @(CurrentPage==curPage?"btn-danger":"")"
+                    @onclick=@(() => PageChanged.InvokeAsync(curPage))>
+                @curPage
+            </button>
+        }
+        <button class="btn btn-custom"
+                disabled="@(CurrentPage == TotalPages)"
+                @onclick=@(() => PageChanged.InvokeAsync(++CurrentPage))>
+            Next
+        </button>
+    </div>
+
+    <div class="form-group float-right">
+        <label for="page-size">Page Size: </label>
+        <input id="page-size"
+               type="number"
+               max="30"
+               style="width: 50px;"
+               value="@PageSize"
+               @onchange="@((e) => {
+                                PageSize = int.Parse(e.Value.ToString());
+                                PageSizeChanged.InvokeAsync(PageSize);
+                            })" />
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int PageSize { get; set; }
+    [Parameter]
+    public int CurrentPage { get; set; }
+    [Parameter]
+    public int TotalPages { get; set; }
+    [Parameter]
+    public EventCallback<int> PageSizeChanged { get; set; }
+    [Parameter]
+    public EventCallback<int> PageChanged { get; set; }
+}

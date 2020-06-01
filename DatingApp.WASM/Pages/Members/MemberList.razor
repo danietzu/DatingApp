@@ -93,32 +93,14 @@
             }
         </div>
 
-        <div class="row container mt-5">
-            <div class="pagination">
-                <button class="btn btn-custom"
-                        disabled="@(currentPage == 1)"
-                        @onclick=@(async ()=> await GetMembers(--currentPage))>
-                    Prev
-                </button>
-                @for (int i = 1; i <= totalPages; i++)
-                {
-                    var curPage = i;
-                    <button class="btn btn-custom pagebutton @(currentPage==curPage?"btn-danger":"")"
-                            @onclick=@(async () => await GetMembers(curPage))>
-                        @curPage
-                    </button>
-                }
-                <button class="btn btn-custom"
-                        disabled="@(currentPage == totalPages)"
-                        @onclick=@(async ()=> await GetMembers(++currentPage))>
-                    Next
-                </button>
-            </div>
-
-            <label>Page Size: </label>
-            <input type="number"
-                   @bind="pageSize" />
-        </div>
+        <PaginationFooter PageSize="pageSize"
+                          CurrentPage="currentPage"
+                          TotalPages="totalPages"
+                          PageSizeChanged="@(async (e) => {
+                                                pageSize = e;
+                                                await GetMembers(currentPage);
+                                             })"
+                          PageChanged="@((e) => GetMembers(e))" />
     </div>
 }
 

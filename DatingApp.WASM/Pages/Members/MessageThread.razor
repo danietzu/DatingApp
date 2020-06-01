@@ -59,25 +59,23 @@
             </ul>
         }
     </div>
+
     <div class="card-footer">
-        <form>
-            <div class="input-group">
-                <input type="text" class="form-control input-group-sm"
-                       placeholder="Send a private message..."
-                       @bind="messageText" />
-                <div class="input-group-append">
-                    <button class="btn btn-primary"
-                            type="button"
-                            @onclick="SendMessage">
-                        Send
-                    </button>
-                </div>
+        <div class="input-group">
+            <input type="text" class="form-control input-group-sm"
+                   placeholder="Send a private message..."
+                   @bind="messageText"
+                   @onkeyup="@((e) => HandleInputChange(e))" />
+            <div class="input-group-append">
+                <button class="btn btn-primary"
+                        type="button"
+                        @onclick="SendMessage">
+                    Send
+                </button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
-
-@* TODO: Add Pagination *@
 
 <style>
     .card {
@@ -121,20 +119,19 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var userId = await authService.GetLoggedInUserId();
-
-        if (!firstRender)
-            foreach (var message in messages)
-                if (message.RecipientId == userId && message.IsRead == false)
-                    await userService.MarkMessageAsRead(message.Id);
-
         await ScrollToLastMessage();
     }
 
     async Task GetMessages()
     {
         // TODO: retrieve only last X messages to reduce data consumption
+        var userId = await authService.GetLoggedInUserId();
+
         messages = await userService.GetMessageThread(Recipient.Id);
+
+        foreach (var message in messages)
+            if (message.RecipientId == userId && message.IsRead == false)
+                await userService.MarkMessageAsRead(message.Id);
     }
 
     async Task SendMessage()
@@ -152,6 +149,14 @@
 
         messages.Add(messageReturned);
         messageText = "";
+    }
+
+    async Task HandleInputChange(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter")
+        {
+            await SendMessage();
+        }
     }
 
     async Task ScrollToLastMessage()

@@ -1,6 +1,5 @@
 using Blazored.Toast;
 using DatingApp.WASM.Services;
-using DatingApp.WASM.Store;
 using Fluxor;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
