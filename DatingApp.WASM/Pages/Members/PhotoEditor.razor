@@ -51,8 +51,6 @@
             {
                 foreach (var file in selectedFiles)
                 {
-                    var isLoading = file.Data.Position > 0;
-
                     <div class="row file-row d-flex justify-content-between flex-nowrap">
                         <div class="overflow-hidden text-nowrap">
                             <h2>@file.Name</h2>
@@ -75,20 +73,6 @@
                     </div>
                 }
             }
-        </div>
-
-        <div class="row mt-3">
-            <button type="button"
-                    class="btn btn-success btn-s"
-                    @onclick="UploadFile">
-                <i class="fa fa-upload"></i> Upload
-            </button>
-            <button type="button" class="btn btn-warning btn-s">
-                <i class="fa fa-ban"></i> Cancel
-            </button>
-            <button type="button" class="btn btn-danger btn-s">
-                <i class="fa fa-trash"></i> Remove
-            </button>
         </div>
     </div>
 }
@@ -143,6 +127,7 @@
     IFileListEntry[] selectedFiles;
     Photo Photo;
     ByteArrayContent _byteArrayContent;
+    bool isLoading;
 
     void HandleSelection(IFileListEntry[] files)
     {
@@ -151,6 +136,8 @@
 
     async Task LoadFile(IFileListEntry file)
     {
+        isLoading = true;
+
         // So the UI updates to show progress
         file.OnDataRead += (sender, eventArgs) => InvokeAsync(StateHasChanged);
 
@@ -165,13 +152,12 @@
             File = _byteArrayContent,
             Description = "Test photo"
         };
-    }
 
-    async Task UploadFile()
-    {
         var response = await userService.UploadPhoto(Photo);
 
-        selectedFiles = null;
+        selectedFiles = selectedFiles.Where(f => f != file).ToArray();
+        isLoading = false;
+
         await OnChange.InvokeAsync(null);
         toastService.ShowSuccess("Photo uploaded successfully!");
     }

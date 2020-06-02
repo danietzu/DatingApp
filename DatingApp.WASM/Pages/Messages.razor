@@ -10,17 +10,17 @@
         <div class="btn-group">
             <button class="btn btn-primary
                     @(messageContainer == "Unread" ? "active" : "")"
-                    @onclick="@(() => GetMessages("Unread"))">
+                    @onclick="@(() => GetMessages("Unread", currentPage))">
                 <i class="fa fa-envelope"></i> Unread
             </button>
             <button class="btn btn-primary
                     @(messageContainer == "Inbox" ? "active" : "")"
-                    @onclick="@(() => GetMessages("Inbox"))">
+                    @onclick="@(() => GetMessages("Inbox", currentPage))">
                 <i class="fa fa-envelope-open"></i> Inbox
             </button>
             <button class="btn btn-primary
                     @(messageContainer == "Outbox" ? "active" : "")"
-                    @onclick="@(() => GetMessages("Outbox"))">
+                    @onclick="@(() => GetMessages("Outbox", currentPage))">
                 <i class="fa fa-paper-plane"></i> Outbox
             </button>
         </div>
@@ -35,7 +35,7 @@
     else
     {
         <div class="row">
-            <table class="table table-hover" style="cursor: pointer">
+            <table class="table table-hover">
                 <tr>
                     <th style="width: 40%">Message</th>
                     <th style="width: 20%">
@@ -52,7 +52,8 @@
                     @foreach (var message in messages)
                     {
                         <tr>
-                            <td @onclick="@(() => navManager.NavigateTo($"members/" +
+                            <td class="message-title"
+                                @onclick="@(() => navManager.NavigateTo($"members/" +
                             $"{(messageContainer == "Outbox" ? message.RecipientId : message.SenderId)}" +
                             $"/messages"))">
                                 @message.Content
@@ -103,27 +104,52 @@
     }
 </div>
 
-<PaginationFooter CurrentPage="1"
-                  PageSize="5"
-                  TotalPages="5" />
+<PaginationFooter CurrentPage="@currentPage"
+                  PageSize="@pageSize"
+                  TotalPages="@totalPages"
+                  PageSizeChanged="@(async (e) => {
+                                        pageSize = e;
+                                        await GetMessages(messageContainer, currentPage);
+                                     })"
+                  PageChanged="@((e) => GetMessages(messageContainer, e))" />
+
+<style>
+    .message-title:hover {
+        cursor: pointer;
+        text-decoration: underline;
+        font-weight: bold;
+    }
+</style>
 
 @code {
     List<Message> messages;
 
     string messageContainer = "Unread";
 
+    // pagination
+    int totalItems;
+    int totalPages;
+    int currentPage = 1;
+    int pageSize = 5;
+
     protected override async Task OnInitializedAsync()
     {
-        await GetMessages(messageContainer);
+        await GetMessages(messageContainer, currentPage);
     }
 
-    async Task GetMessages(string container)
+    async Task GetMessages(string container, int page)
     {
+        currentPage = page;
+
         messages = new List<Message>();
         messageContainer = container;
 
-        var response = await userService.GetMessages(1, 5, container);
+        var response = await userService.GetMessages(page, pageSize, container);
+
         messages = response.Result.ToList();
+        totalItems = response.Pagination.TotalItems;
+        totalPages = (int)Math.Ceiling(response.Pagination.TotalItems /
+                                      (double)response.Pagination.ItemsPerPage);
     }
 
     async Task DeleteMessage(Message message)

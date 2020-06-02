@@ -1,20 +1,26 @@
-﻿<div class="row mt-5"
+﻿@inject IJSRuntime js
+
+<div class="row d-flex justify-content-between mt-5"
      style="position: fixed; width: 100%; bottom: 0; right: 0; z-index: 3;
-                    background-color: white; padding: 10px;">
+                    background-color: white; padding: 5px;">
     <div class="pagination">
         <button class="btn btn-custom"
                 disabled="@(CurrentPage == 1)"
                 @onclick=@(() => PageChanged.InvokeAsync(--CurrentPage))>
             Prev
         </button>
-        @for (int i = 1; i <= TotalPages; i++)
-        {
-            var curPage = i;
-            <button class="btn btn-custom pagebutton @(CurrentPage==curPage?"btn-danger":"")"
-                    @onclick=@(() => PageChanged.InvokeAsync(curPage))>
-                @curPage
-            </button>
-        }
+        <span id="pagination-bar"
+              style="overflow-x: scroll; max-width: 350px; white-space: nowrap;">
+            @for (int i = 1; i <= TotalPages; i++)
+            {
+                var curPage = i;
+                <button class="btn btn-custom pagebutton
+                        @(CurrentPage==curPage?"btn-danger curPageBtn":"")"
+                        @onclick=@(() => PageChanged.InvokeAsync(curPage))>
+                    @curPage
+                </button>
+            }
+        </span>
         <button class="btn btn-custom"
                 disabled="@(CurrentPage == TotalPages)"
                 @onclick=@(() => PageChanged.InvokeAsync(++CurrentPage))>
@@ -22,7 +28,7 @@
         </button>
     </div>
 
-    <div class="form-group float-right">
+    <div class="form-group mr-5">
         <label for="page-size">Page Size: </label>
         <input id="page-size"
                type="number"
@@ -36,6 +42,18 @@
     </div>
 </div>
 
+<style>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    #pagination-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar for IE and Edge */
+    #pagination-bar {
+        -ms-overflow-style: none;
+    }
+</style>
+
 @code {
     [Parameter]
     public int PageSize { get; set; }
@@ -47,4 +65,14 @@
     public EventCallback<int> PageSizeChanged { get; set; }
     [Parameter]
     public EventCallback<int> PageChanged { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await ScrollToCurrentPageBtn();
+    }
+
+    async Task ScrollToCurrentPageBtn()
+    {
+        await js.InvokeVoidAsync("scrollTo", "curPageBtn");
+    }
 }
